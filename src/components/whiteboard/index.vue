@@ -1,0 +1,249 @@
+<template>
+    <div class="white-board" ref="whiteboard">
+        <canvas
+            ref="canvas"
+            :width="canvasWidth"
+            :height="canvasHeighth"
+			@mousewheel.prevent="wheelScaleCanvas"
+            :style="{
+                width: canvasDomWidth,
+                height: canvasDomHeight,
+                cursor: cursor
+            }"
+        ></canvas>
+
+        <Compass
+			:canvasConfig="canvasConfig"
+			@close="setOptionType(OPTION_TYPE.PEN)"
+			@draw-start="drawStart"
+			@drawing="drawing"
+			@draw-end="drawEnd"
+			v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS"
+        />
+    </div>
+</template>
+
+<script setup lang="ts">
+import {
+    ref,
+    nextTick,
+    reactive,
+    onUnmounted,
+    computed,
+    defineProps,
+    defineExpose,
+    PropType,
+    watch,
+    toRefs
+} from "vue";
+import useHandlePointer from "./hooks/useHandlePointer";
+import useRenderElement from "./hooks/useRenderElement";
+import useZoom from "./hooks/useZoom";
+import useClearElement from "./hooks/useClearElement";
+import { IElement, ICanvasConfig, IOptionsConfig } from "./types";
+import { OPTION_TYPE } from "./config";
+import { throttle } from "lodash";
+import Compass from "./components/compass/index.vue";
+import useDrawElement from "./hooks/useDrawElement";
+
+const props = defineProps({
+    options: {
+        type: Object as PropType<IOptionsConfig>,
+        default: () => ({
+            offsetX: 0,
+            offsetY: 0
+        })
+    }
+});
+
+const { options } = toRefs(props);
+
+watch(
+    () => props.options,
+    () => {
+        canvasConfig.offsetX = options.value.offsetX;
+        canvasConfig.offsetY = options.value.offsetY;
+    }
+);
+
+const canvasScale = window.devicePixelRatio;
+const whiteboard = ref<HTMLDivElement | null>(null);
+const canvas = ref<HTMLCanvasElement | null>(null);
+const context = ref<CanvasRenderingContext2D | null>(null);
+const canvasWidth = ref(0 * canvasScale);
+const canvasHeighth = ref(0 * canvasScale);
+const canvasDomWidth = ref(0 + "px");
+const canvasDomHeight = ref(0 + "px");
+
+const cursor = computed(() => {
+    if (canvasConfig.isMoveOrScale) return "grabbing";
+    return {
+        MOUSE: "default",
+        PEN: "crosshair",
+        ERASER: "url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==') 10 10, auto"
+    }[canvasConfig.optionType];
+});
+
+// 画布配置
+const canvasConfig = reactive<ICanvasConfig>({
+    offsetX: options.value.offsetX,
+    offsetY: options.value.offsetY,
+    scrollX: 0,
+    scrollY: 0,
+    zoom: 1,
+    optionType: OPTION_TYPE.MOUSE,
+    lineWidth: 5,
+    strokeColor: "#f60000",
+    isDrawing: false,
+    isMoveOrScale: false
+});
+
+// 是否支持触摸
+const canTouch = "ontouchstart" in window;
+
+// 绘制元素集合
+const elements = ref<IElement[]>([]);
+const { handleDown, handleMove, handleUp } = useHandlePointer(
+    canvas,
+    context,
+    elements,
+    canvasConfig
+);
+const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
+const { drawStart, drawing, drawEnd } = useDrawElement(canvas, context, elements, canvasConfig);
+const { clearElements } = useClearElement(
+    canvas,
+    context,
+    elements,
+    canvasConfig
+);
+
+// 进行缩放
+const zoomChange = (newZoom: number, oldZoom: number) => {
+    updateScroll(
+        newZoom,
+        oldZoom,
+        canvas.value!.width / 2,
+        canvas.value!.height / 2
+    );
+    renderElements(elements.value);
+};
+
+const wheelScaleCanvas = throttle((event: WheelEvent) => {
+	if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {
+		handleWeel(event.pageX, event.pageY, event.deltaY);
+		renderElements(elements.value);
+	}
+}, 30);
+
+nextTick(async () => {
+    if (!canvas.value || !whiteboard.value) return;
+    context.value = canvas.value.getContext("2d");
+
+    if (canTouch) {
+        canvas.value.addEventListener("touchstart", handleDown);
+        canvas.value.addEventListener("touchmove", handleMove);
+        canvas.value.addEventListener("touchend", handleUp);
+    } else {
+        canvas.value.addEventListener("pointerdown", handleDown);
+        canvas.value.addEventListener("pointermove", handleMove);
+        canvas.value.addEventListener("pointerup", handleUp);
+    }
+
+    // 区域大小变化重置canvas
+    const resize = throttle(() => {
+        if (!whiteboard.value || !context.value) return;
+        canvasWidth.value = whiteboard.value.clientWidth * canvasScale;
+        canvasHeighth.value = whiteboard.value.clientHeight * canvasScale;
+        canvasDomWidth.value = whiteboard.value.clientWidth + "px";
+        canvasDomHeight.value = whiteboard.value.clientHeight + "px";
+
+        context.value.scale(canvasScale, canvasScale);
+        context.value.setTransform(1, 0, 0, 1, 0, 0);
+        context.value.save();
+
+        nextTick(async () => {
+            renderElements(elements.value);
+        });
+    }, 100);
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(whiteboard.value);
+});
+
+onUnmounted(() => {
+    if (canvas.value) {
+        if (canTouch) {
+            canvas.value.removeEventListener("touchstart", handleDown);
+            canvas.value.removeEventListener("touchmove", handleMove);
+            canvas.value.removeEventListener("touchend", handleUp);
+        } else {
+            canvas.value.removeEventListener("pointerdown", handleDown);
+            canvas.value.removeEventListener("pointermove", handleMove);
+            canvas.value.removeEventListener("pointerup", handleUp);
+        }
+    }
+});
+
+// 画布滚动
+const setScroll = (x: number, y: number) => {
+    canvasConfig.scrollX = x;
+    canvasConfig.scrollY = y;
+};
+
+// 画布缩放
+const setZoom = (zoom: number) => {
+    canvasConfig.zoom = zoom;
+};
+
+// 设置操作模式
+const setOptionType = (type: string) => {
+    canvasConfig.optionType = type;
+};
+
+// 设置画笔宽度
+const setLineWidth = (width: number) => {
+    canvasConfig.lineWidth = width;
+};
+
+// 设置画笔颜色
+const setDrawColor = (color: string) => {
+    canvasConfig.strokeColor = color;
+};
+
+// 渲染
+const render = (inElements?: IElement[]) => {
+    renderElements(inElements || elements.value);
+};
+
+// 获取元素数据
+const getElements = () => {
+	return elements.value;
+};
+
+defineExpose({
+    setScroll,
+    setZoom,
+    setOptionType,
+    setLineWidth,
+    setDrawColor,
+    render,
+	getElements
+});
+</script>
+
+<style>
+.white-board {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    color: #333;
+    user-select: none;
+}
+
+.eraser {
+    cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==")
+            10 10,
+        auto;
+}
+</style>
