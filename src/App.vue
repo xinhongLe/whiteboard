@@ -33,7 +33,7 @@ export default defineComponent({
                 offsetX: x,
                 offsetY: y
             };
-            whiteboard.value.setOptionType(OPTION_TYPE.COMPASS);
+            whiteboard.value.setOptionType(OPTION_TYPE.PEN);
         });
         const setZoom = (zoom: number) => {
             whiteboard.value.setZoom(zoom);
