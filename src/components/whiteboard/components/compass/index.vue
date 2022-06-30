@@ -57,9 +57,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, onMounted, defineEmits, PropType, computed } from "vue";
+import { ref, defineProps, onMounted, defineEmits, PropType, computed, onUnmounted } from "vue";
 import { ICanvasConfig } from "../../types";
-import { getCanvasPointPosition, getWhiteBoardPointPosition } from "../../utils";
+import { getCanvasPointPosition } from "../../utils";
 let startAngle = 0;
 let drawAngle = 0;
 let recordAngle = 0;
@@ -90,7 +90,11 @@ const props = defineProps({
 const canvasConfig = computed(() => props.canvasConfig);
 
 onMounted(() => {
-    compass.value.addEventListener("pointerdown", handleMouseDown);
+    document.addEventListener("pointerdown", handleMouseDown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener("pointerdown", handleMouseDown);
 });
 
 const getAngle = (x: number, y: number) => {
@@ -174,8 +178,8 @@ const handleMouseDown = (event: PointerEvent) => {
         });
     }
 
-    compass.value.addEventListener("pointermove", handleMouseMove);
-    compass.value.addEventListener("pointerup", handleEnd);
+    document.addEventListener("pointermove", handleMouseMove);
+    document.addEventListener("pointerup", handleEnd);
 };
 
 const handleMouseMove = (event: MouseEvent) => {
@@ -254,8 +258,8 @@ const close = () => {
 const handleEnd = () => {
     emit("drawEnd");
     mode = "";
-    compass.value.removeEventListener("pointermove", handleMouseMove);
-    compass.value.removeEventListener("pointerup", handleEnd);
+    document.removeEventListener("pointermove", handleMouseMove);
+    document.removeEventListener("pointerup", handleEnd);
 };
 </script>
 
