@@ -4,6 +4,7 @@
     <button @click="setOptionType(OPTION_TYPE.PEN)">画</button>
     <button @click="setOptionType(OPTION_TYPE.MOUSE)">移动</button>
     <button @click="setOptionType(OPTION_TYPE.COMPASS)">圆规</button>
+    <button @click="setOptionType(OPTION_TYPE.RULER)">直尺</button>
     <button @click="getElements()">数据</button>
     <div class="white-board-box" ref="whiteboardBox">
         <WhiteBoard :options="options" ref="whiteboard" />
@@ -33,7 +34,7 @@ export default defineComponent({
                 offsetX: x,
                 offsetY: y
             };
-            whiteboard.value.setOptionType(OPTION_TYPE.PEN);
+            whiteboard.value.setOptionType(OPTION_TYPE.RULER);
         });
         const setZoom = (zoom: number) => {
             whiteboard.value.setZoom(zoom);

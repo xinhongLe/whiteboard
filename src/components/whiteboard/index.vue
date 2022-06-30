@@ -4,7 +4,7 @@
             ref="canvas"
             :width="canvasWidth"
             :height="canvasHeighth"
-			@mousewheel.prevent="wheelScaleCanvas"
+            @mousewheel.prevent="wheelScaleCanvas"
             :style="{
                 width: canvasDomWidth,
                 height: canvasDomHeight,
@@ -13,12 +13,18 @@
         ></canvas>
 
         <Compass
-			:canvasConfig="canvasConfig"
-			@close="setOptionType(OPTION_TYPE.PEN)"
-			@draw-start="drawStart"
-			@drawing="drawing"
-			@draw-end="drawEnd"
-			v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS"
+            :canvasConfig="canvasConfig"
+            @close="setOptionType(OPTION_TYPE.PEN)"
+            @draw-start="drawStart"
+            @drawing="drawing"
+            @draw-end="drawEnd"
+            v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS"
+        />
+
+        <Ruler
+            :canvasConfig="canvasConfig"
+            @close="setOptionType(OPTION_TYPE.PEN)"
+            v-if="canvasConfig.optionType === OPTION_TYPE.RULER"
         />
     </div>
 </template>
@@ -36,15 +42,16 @@ import {
     watch,
     toRefs
 } from "vue";
+import { IElement, ICanvasConfig, IOptionsConfig } from "./types";
+import { OPTION_TYPE } from "./config";
+import { throttle } from "lodash";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import useZoom from "./hooks/useZoom";
 import useClearElement from "./hooks/useClearElement";
-import { IElement, ICanvasConfig, IOptionsConfig } from "./types";
-import { OPTION_TYPE } from "./config";
-import { throttle } from "lodash";
-import Compass from "./components/compass/index.vue";
 import useDrawElement from "./hooks/useDrawElement";
+import Compass from "./components/compass/index.vue";
+import Ruler from "./components/ruler/index.vue";
 
 const props = defineProps({
     options: {
@@ -111,7 +118,12 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
-const { drawStart, drawing, drawEnd } = useDrawElement(canvas, context, elements, canvasConfig);
+const { drawStart, drawing, drawEnd } = useDrawElement(
+    canvas,
+    context,
+    elements,
+    canvasConfig
+);
 const { clearElements } = useClearElement(
     canvas,
     context,
@@ -131,10 +143,10 @@ const zoomChange = (newZoom: number, oldZoom: number) => {
 };
 
 const wheelScaleCanvas = throttle((event: WheelEvent) => {
-	if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {
-		handleWeel(event.pageX, event.pageY, event.deltaY);
-		renderElements(elements.value);
-	}
+    if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {
+        handleWeel(event.pageX, event.pageY, event.deltaY);
+        renderElements(elements.value);
+    }
 }, 30);
 
 nextTick(async () => {
@@ -218,7 +230,7 @@ const render = (inElements?: IElement[]) => {
 
 // 获取元素数据
 const getElements = () => {
-	return elements.value;
+    return elements.value;
 };
 
 defineExpose({
@@ -228,7 +240,7 @@ defineExpose({
     setLineWidth,
     setDrawColor,
     render,
-	getElements
+    getElements
 });
 </script>
 

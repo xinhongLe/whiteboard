@@ -59,7 +59,7 @@
 <script lang="ts" setup>
 import { ref, defineProps, onMounted, defineEmits, PropType, computed, onUnmounted, nextTick } from "vue";
 import { ICanvasConfig } from "../../types";
-import { getCanvasPointPosition } from "../../utils";
+import { getAngle, getCanvasPointPosition } from "../../utils";
 let startAngle = 0;
 let drawAngle = 0;
 let recordAngle = 0;
@@ -99,14 +99,6 @@ onMounted(() => {
 onUnmounted(() => {
     document.removeEventListener("pointerdown", handleMouseDown);
 });
-
-const getAngle = (x: number, y: number) => {
-    const angle = Math.round(
-        (Math.atan(Math.abs(y) / Math.abs(x)) / Math.PI) * 180
-    );
-
-    return x > 0 ? (y > 0 ? angle : -angle) : y > 0 ? 180 - angle : angle - 180;
-};
 
 const getDrawAngle = (x: number, y: number) => {
     const angle = Math.round(

@@ -455,3 +455,17 @@ export const getPositionElement = (
     }
     return hoverElement;
 };
+
+/**
+ * 获取旋转角度
+ * @param x 
+ * @param y 
+ * @returns 
+ */
+export const getAngle = (x: number, y: number) => {
+    const angle = Math.round(
+        (Math.atan(Math.abs(y) / Math.abs(x)) / Math.PI) * 180
+    );
+
+    return x > 0 ? (y > 0 ? angle : -angle) : y > 0 ? 180 - angle : angle - 180;
+};
