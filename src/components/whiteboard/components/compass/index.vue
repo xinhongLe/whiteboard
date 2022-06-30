@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, onMounted, defineEmits, PropType, computed, onUnmounted } from "vue";
+import { ref, defineProps, onMounted, defineEmits, PropType, computed, onUnmounted, nextTick } from "vue";
 import { ICanvasConfig } from "../../types";
 import { getCanvasPointPosition } from "../../utils";
 let startAngle = 0;
@@ -91,6 +91,9 @@ const canvasConfig = computed(() => props.canvasConfig);
 
 onMounted(() => {
     document.addEventListener("pointerdown", handleMouseDown);
+    nextTick(() => {
+        x.value = compass.value.clientWidth / 2 - 109;
+    });
 });
 
 onUnmounted(() => {
