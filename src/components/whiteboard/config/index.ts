@@ -5,4 +5,5 @@ export enum OPTION_TYPE {
     ERASER = "ERASER", // 橡皮擦
     COMPASS = "COMPASS", // 圆规
     RULER = "RULER", // 直尺
+    PROTRACTOR = "PROTRACTOR", // 量角器
 }

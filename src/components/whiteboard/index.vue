@@ -29,6 +29,12 @@
             @draw-end="drawEnd"
             v-if="canvasConfig.optionType === OPTION_TYPE.RULER"
         />
+
+        <Protractor
+            :canvasConfig="canvasConfig"
+            @close="setOptionType(OPTION_TYPE.PEN)"
+            v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR"
+        />
     </div>
 </template>
 
@@ -55,6 +61,7 @@ import useClearElement from "./hooks/useClearElement";
 import useDrawElement from "./hooks/useDrawElement";
 import Compass from "./components/compass/index.vue";
 import Ruler from "./components/ruler/index.vue";
+import Protractor from "./components/protractor/index.vue";
 
 const props = defineProps({
     options: {

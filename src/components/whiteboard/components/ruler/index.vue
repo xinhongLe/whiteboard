@@ -14,7 +14,15 @@
                 <div class="ruler-button ruler-close" @click="closeRuler()">
                     <img src="./images/close.svg" alt="" />
                 </div>
-                <div class="ruler-angle-text">{{ viewText === "angle" ? angle + "°" : viewText === "length" ? length + "cm" : "" }}</div>
+                <div class="ruler-angle-text">
+                    {{
+                        viewText === "angle"
+                            ? angle + "°"
+                            : viewText === "length"
+                            ? length + "cm"
+                            : ""
+                    }}
+                </div>
                 <div class="ruler-button ruler-rotate">
                     <img src="./images/rotate.svg" alt="" />
                 </div>
@@ -27,7 +35,15 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, PropType, ref, defineProps, defineEmits } from "vue";
+import {
+    computed,
+    onMounted,
+    PropType,
+    ref,
+    defineProps,
+    defineEmits,
+    onUnmounted
+} from "vue";
 import { ICanvasConfig, ICenter } from "../../types";
 import { getAngle, getCanvasPointPosition } from "../../utils";
 
@@ -52,7 +68,10 @@ const viewText = ref("");
 const startPoint = { x: 0, y: 0 };
 const length = ref(0);
 let startAngle = 0;
-let drawLine = [[0, 0], [0, 0]];
+let drawLine = [
+    [0, 0],
+    [0, 0]
+];
 let rulerCenter = { x: 0, y: 0 };
 
 const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
@@ -60,7 +79,7 @@ const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
     const angleA = getAngle(mousePoint.x - center.x, mousePoint.y - center.y);
     const targetAngle = angleA - angle.value;
     if (targetAngle === 0) return l;
-    const drawL = Math.abs(l * Math.sign(targetAngle * Math.PI / 180));
+    const drawL = Math.abs(l * Math.sign((targetAngle * Math.PI) / 180));
     return drawL;
 };
 
@@ -86,7 +105,10 @@ const handleMouseDown = (event: PointerEvent) => {
         // rotate
         mode.value = "rotate";
         viewText.value = "angle";
-        startAngle = getAngle(mouseX - x.value - canvasConfig.value.offsetX, mouseY - y.value - canvasConfig.value.offsetY);
+        startAngle = getAngle(
+            mouseX - x.value - canvasConfig.value.offsetX,
+            mouseY - y.value - canvasConfig.value.offsetY
+        );
     }
 
     if (
@@ -98,17 +120,23 @@ const handleMouseDown = (event: PointerEvent) => {
         viewText.value = "";
     }
 
-     if (
-        event.target &&
-        (event.target as Element).className === "ruler-scale"
-    ) {
+    if (event.target && (event.target as Element).className === "ruler-scale") {
         // draw
         mode.value = "draw";
         viewText.value = "length";
-        rulerCenter = getCanvasPointPosition({ x: x.value + canvasConfig.value.offsetX, y: y.value + canvasConfig.value.offsetY}, canvasConfig.value);
+        rulerCenter = getCanvasPointPosition(
+            {
+                x: x.value + canvasConfig.value.offsetX,
+                y: y.value + canvasConfig.value.offsetY
+            },
+            canvasConfig.value
+        );
         const point = getCanvasPointPosition(startPoint, canvasConfig.value);
         const line = dealForDrawLine(rulerCenter, point);
-        drawLine = [[line, 0], [line, 0]];
+        drawLine = [
+            [line, 0],
+            [line, 0]
+        ];
         length.value = 0;
         emit("drawStart", {
             ...rulerCenter,
@@ -132,8 +160,11 @@ const handleMouseMove = (event: PointerEvent) => {
     }
 
     if (mode.value === "rotate") {
-        const targetAngle = getAngle(mouseX - x.value - canvasConfig.value.offsetX, mouseY - y.value - canvasConfig.value.offsetY);
-        angle.value +=  targetAngle - startAngle;
+        const targetAngle = getAngle(
+            mouseX - x.value - canvasConfig.value.offsetX,
+            mouseY - y.value - canvasConfig.value.offsetY
+        );
+        angle.value += targetAngle - startAngle;
         startAngle = targetAngle;
     }
 
@@ -166,7 +197,7 @@ const handleEnd = () => {
 
 const closeRuler = () => {
     emit("close");
-}
+};
 
 onMounted(() => {
     if (ruler.value) {
@@ -175,6 +206,10 @@ onMounted(() => {
     }
 
     document.addEventListener("pointerdown", handleMouseDown);
+});
+
+onUnmounted(() => {
+    document.removeEventListener("pointerdown", handleMouseDown);
 });
 </script>
 
