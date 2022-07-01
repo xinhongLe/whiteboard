@@ -104,7 +104,7 @@ export default (
                 updateElement(targetElement, {
                     points: [
                         ...points,
-                        [x - targetElement.x, y - targetElement.y]
+                        [x - (targetElement as IPenElement).x, y - (targetElement as IPenElement).y]
                     ]
                 });
                 break;
@@ -134,7 +134,7 @@ export default (
                     updateElement(targetElement, {
                         points: [
                             ...points,
-                            [x - targetElement.x, y - targetElement.y]
+                            [x - (targetElement as IPenElement).x, y - (targetElement as IPenElement).y]
                         ]
                     });
                 }

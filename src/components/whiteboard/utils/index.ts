@@ -1,6 +1,6 @@
 import getStroke, { StrokeOptions } from "perfect-freehand";
 import { OPTION_TYPE } from "../config";
-import { IBoundsCoords, ICanvasConfig, ICenter, IElement, IPenElement, IPoint } from "../types";
+import { IBoundsCoords, ICanvasConfig, ICenter, ICompassElement, IElement, IPenElement, IPoint, IRulerElement } from "../types";
 
 /**
  * 生成随机码
@@ -131,19 +131,35 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
             (element as IPenElement).points
         );
         return [
-            minX + element.x,
-            minY + element.y,
-            maxX + element.x,
-            maxY + element.y
+            minX + (element as IPenElement).x,
+            minY + (element as IPenElement).y,
+            maxX + (element as IPenElement).x,
+            maxY + (element as IPenElement).y
         ];
     }
 
-    return [
-        element.x,
-        element.y,
-        element.x + element.width,
-        element.y + element.height
-    ];
+    if (element.type === OPTION_TYPE.COMPASS) {
+        return [
+            (element as ICompassElement).x - (element as ICompassElement).r - (element as ICompassElement).lineWidth / 2,
+            (element as ICompassElement).y - (element as ICompassElement).r - (element as ICompassElement).lineWidth / 2,
+            (element as ICompassElement).x + (element as ICompassElement).r + (element as ICompassElement).lineWidth / 2,
+            (element as ICompassElement).y + (element as ICompassElement).r + (element as ICompassElement).lineWidth / 2
+        ]
+    }
+
+    if (element.type === OPTION_TYPE.RULER) {
+        const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+            (element as IRulerElement).points
+        );
+        return [
+            minX - (element as IRulerElement).lineWidth / 2,
+            minY - (element as IRulerElement).lineWidth / 2,
+            maxX + (element as IRulerElement).lineWidth / 2,
+            maxY + (element as IRulerElement).lineWidth / 2
+        ]
+    }
+
+    return [ 0, 0, 0, 0 ];
 };
 
 // throttle callback to execute once per animation frame
@@ -261,65 +277,67 @@ export const checkCrossElements = (
     // ！！！！！可以考虑点到点两点之间距离小于多少为一个判断的界限来判定 只要存在一点 与 橡皮点 的直线值小于 min 则认为橡皮擦除到改元素
     // 过滤元素 只对可视区域元素进行判断 降低不必要的性能损耗
     for (const element of elements) {
-        const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
-            (element as IPenElement).points
-        );
-        if (
-            !(
-                (element.x + minX > Math.max(startPonit[0], x) &&
-                    element.y + minY > Math.max(startPonit[1], y)) ||
-                (element.x + maxX < Math.min(startPonit[0], x) &&
-                    element.y + maxY < Math.min(startPonit[1], y))
-            ) &&
-            !element.isDelete
-        ) {
-            // 元素为一个点的情况 或者元素比较小，点都都集中在某个小范围内
-            // 进一步优化交点方法不灵敏问题
+        if (element.type === OPTION_TYPE.PEN) {
+            const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
+                (element as IPenElement).points
+            );
             if (
-                (maxX - minX < 5 && maxY - minY < 5) ||
-                (element as IPenElement).points.length === 2
+                !(
+                    ((element as IPenElement).x + minX > Math.max(startPonit[0], x) &&
+                    (element as IPenElement).y + minY > Math.max(startPonit[1], y)) ||
+                    ((element as IPenElement).x + maxX < Math.min(startPonit[0], x) &&
+                    (element as IPenElement).y + maxY < Math.min(startPonit[1], y))
+                ) &&
+                !element.isDelete
             ) {
-                const r = Math.hypot(x - element.x, y - element.y);
-                if (r < 5) return (element.isDelete = true);
-            }
-
-            // 下面对存在交点的情况 进行进一步判断
-            // 通过向量的叉乘进行判断
-            // 向量a×向量b（×为向量叉乘），若结果小于0，表示向量b在向量a的顺时针方向；若结果大于0，表示向量b在向量a的逆时针方向；若等于0，表示向量a与向量b平行
-            // 假设有两条线段AB，CD，若AB，CD相交
-            // 线段AB与CD所在的直线相交，即点A和点B分别在直线CD的两边
-            // 线段CD与AB所在的直线相交，即点C和点D分别在直线AB的两边
-            // 两个条件同时满足是两线段相交的充要条件，所以我们只需要证明点A和点B分别在直线CD的两边，点C和点D分别在直线AB的两边，这样便可以证明线段AB与CD相交
-            for (let i = 0; i < (element as IPenElement).points.length - 1; i++) {
-                const A = [
-                    (element as IPenElement).points[i][0] + element.x,
-                    (element as IPenElement).points[i][1] + element.y
-                ];
-                const B = [
-                    (element as IPenElement).points[i + 1][0] + element.x,
-                    (element as IPenElement).points[i + 1][1] + element.y
-                ];
-                const C = startPonit;
-                const D = [x, y];
-                // 以A为起点 向量AC AB AD -> 证明 C D 点 在AB两边
-                // 向量AB AC AD
-                const AB = [B[0] - A[0], B[1] - A[1]];
-                const AC = [C[0] - A[0], C[1] - A[1]];
-                const AD = [D[0] - A[0], D[1] - A[1]];
-
-                // 以C为起点 向量 CD CA CB -> 证明 A B 点 在CD两边
-                // 向量 CD CA CB
-                const CA = [A[0] - C[0], A[1] - C[1]];
-                const CB = [B[0] - C[0], B[1] - C[1]];
-                const CD = [D[0] - C[0], D[1] - C[1]];
-
-                // 向量叉乘 一正一负 证明则成立
+                // 元素为一个点的情况 或者元素比较小，点都都集中在某个小范围内
+                // 进一步优化交点方法不灵敏问题
                 if (
-                    Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 &&
-                    Math.sign(crossMul(CA, CD) * crossMul(CB, CD)) === -1
+                    (maxX - minX < 5 && maxY - minY < 5) ||
+                    (element as IPenElement).points.length === 2
                 ) {
-                    element.isDelete = true;
-                    break;
+                    const r = Math.hypot(x - (element as IPenElement).x, y - (element as IPenElement).y);
+                    if (r < 5) return (element.isDelete = true);
+                }
+    
+                // 下面对存在交点的情况 进行进一步判断
+                // 通过向量的叉乘进行判断
+                // 向量a×向量b（×为向量叉乘），若结果小于0，表示向量b在向量a的顺时针方向；若结果大于0，表示向量b在向量a的逆时针方向；若等于0，表示向量a与向量b平行
+                // 假设有两条线段AB，CD，若AB，CD相交
+                // 线段AB与CD所在的直线相交，即点A和点B分别在直线CD的两边
+                // 线段CD与AB所在的直线相交，即点C和点D分别在直线AB的两边
+                // 两个条件同时满足是两线段相交的充要条件，所以我们只需要证明点A和点B分别在直线CD的两边，点C和点D分别在直线AB的两边，这样便可以证明线段AB与CD相交
+                for (let i = 0; i < (element as IPenElement).points.length - 1; i++) {
+                    const A = [
+                        (element as IPenElement).points[i][0] + (element as IPenElement).x,
+                        (element as IPenElement).points[i][1] + (element as IPenElement).y
+                    ];
+                    const B = [
+                        (element as IPenElement).points[i + 1][0] + (element as IPenElement).x,
+                        (element as IPenElement).points[i + 1][1] + (element as IPenElement).y
+                    ];
+                    const C = startPonit;
+                    const D = [x, y];
+                    // 以A为起点 向量AC AB AD -> 证明 C D 点 在AB两边
+                    // 向量AB AC AD
+                    const AB = [B[0] - A[0], B[1] - A[1]];
+                    const AC = [C[0] - A[0], C[1] - A[1]];
+                    const AD = [D[0] - A[0], D[1] - A[1]];
+    
+                    // 以C为起点 向量 CD CA CB -> 证明 A B 点 在CD两边
+                    // 向量 CD CA CB
+                    const CA = [A[0] - C[0], A[1] - C[1]];
+                    const CB = [B[0] - C[0], B[1] - C[1]];
+                    const CD = [D[0] - C[0], D[1] - C[1]];
+    
+                    // 向量叉乘 一正一负 证明则成立
+                    if (
+                        Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 &&
+                        Math.sign(crossMul(CA, CD) * crossMul(CB, CD)) === -1
+                    ) {
+                        element.isDelete = true;
+                        break;
+                    }
                 }
             }
         }
@@ -392,11 +410,11 @@ export const getViewCanvasBoundsCoords = (
  * @returns 
  */
 export const getPositionElement = (
-    elements: IElement[],
+    elements: IPenElement[],
     zoom: number,
     x: number,
     y: number,
-    selectedElement: IElement | undefined
+    selectedElement: IPenElement | undefined
 ) => {
     // 未计算线条宽度！！！！！！！！！！！！！
     // 只通过一个点确定不准！！！！！！！！！！！！！！ 方案二 采用邻居两个点的线段 判断移动点距离两点的距离和与两点之间的距离进行比较 再结合方案一 来提升精度
@@ -405,7 +423,7 @@ export const getPositionElement = (
     // 计算鼠标点位与元素点位之间的距离来确认是否选中到元素
     // 定义判断基础距离
     const distance = 5 * zoom;
-    let hoverElement: IElement | undefined;
+    let hoverElement: IPenElement | undefined;
     for (const element of elements) {
         // 对可视区域元素进行进一步的过滤 降低计算
         const [minX, minY, maxX, maxY] = getElementBoundsCoords(element);

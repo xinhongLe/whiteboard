@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
-import { ICanvasConfig, ICenter, ICompassData, IElement } from "../types";
+import { ICanvasConfig, ICenter, ICompassData, IElement, IRulerData } from "../types";
 import { createRandomCode } from "../utils";
 
 export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
@@ -41,8 +41,24 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
         });
     };
 
+    const createRulerElement = (data: IRulerData) => {
+        return createElement({
+            id: createRandomCode(),
+            type: OPTION_TYPE.RULER,
+            width: 0,
+            height: 0,
+            ...data,
+            angle: 0,
+            isDelete: false,
+            locked: false,
+            lineWidth: canvasConfig.lineWidth,
+            strokeColor: canvasConfig.strokeColor
+        });
+    };
+
     return {
         createPenElement,
-        createCompassElement
+        createCompassElement,
+        createRulerElement
     };
 };

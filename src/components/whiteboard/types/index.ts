@@ -1,5 +1,5 @@
 /**
- * type: 元素类型 (pen: 笔记 compass: 圆规)
+ * type: 元素类型 (pen: 笔记 compass: 圆规 ruler: 直尺)
  *
  * angle: 旋转角度
  *
@@ -17,31 +17,41 @@
  */
 interface IBaseElement {
     id: string;
-    type: "PEN" | "COMPASS";
+    type: "PEN" | "COMPASS" | "RULER";
     angle: number;
     isDelete: boolean;
     locked: boolean;
-    x: number;
-    y: number;
     width: number;
     height: number;
     [key: string]: unknown;
 }
 
-export type IElement = IPenElement | ICompassElement;
+export type IElement = IPenElement | ICompassElement | IRulerElement;
 
 export type IPoint = number[];
 
 export interface IPenElement extends IBaseElement {
+    x: number;
+    y: number;
     points: IPoint[];
     lineWidth: number;
     strokeColor: string;
 }
 
 export interface ICompassElement extends IBaseElement {
+    x: number;
+    y: number;
     startAngle: number;
     drawAngle: number;
     r: number;
+    lineWidth: number;
+    strokeColor: string;
+}
+
+export interface IRulerElement extends IBaseElement {
+    x: number;
+    y: number;
+    points: IPoint[];
     lineWidth: number;
     strokeColor: string;
 }
@@ -87,6 +97,13 @@ export interface ICompassData {
     drawAngle: number;
     x: number;
     y: number;
+}
+
+export interface IRulerData {
+    x: number;
+    y: number;
+    points: IPoint[];
+    angle: number;
 }
 
 export interface ICenter {

@@ -24,6 +24,9 @@
         <Ruler
             :canvasConfig="canvasConfig"
             @close="setOptionType(OPTION_TYPE.PEN)"
+            @draw-start="drawStart"
+            @drawing="drawing"
+            @draw-end="drawEnd"
             v-if="canvasConfig.optionType === OPTION_TYPE.RULER"
         />
     </div>

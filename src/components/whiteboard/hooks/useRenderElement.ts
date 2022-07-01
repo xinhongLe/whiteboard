@@ -6,7 +6,8 @@ import {
     ICompassElement,
     IElement,
     IPenElement,
-    IPoint
+    IPoint,
+    IRulerElement
 } from "../types";
 import {
     getBoundsCoordsFromPoints,
@@ -102,6 +103,40 @@ export default (
         context.value.restore();
     };
 
+    const renderRulerElement = (element: IRulerElement) => {
+        if (!context.value) return;
+        // 存储状态
+        context.value.save();
+
+        // 缩放
+        context.value.scale(
+            window.devicePixelRatio * canvasConfig.zoom,
+            window.devicePixelRatio * canvasConfig.zoom
+        );
+
+        const cx = element.x + canvasConfig.scrollX;
+        const cy = element.y + canvasConfig.scrollY;
+
+        // 移动坐标系原点 到 起始点
+        context.value.translate(cx, cy);
+
+        // 目标旋转对应的角度
+        context.value.rotate(element.angle * Math.PI / 180);
+
+        // 绘制笔记
+        context.value.strokeStyle = element.strokeColor;
+        context.value.lineWidth = element.lineWidth / 1.5;
+        context.value.beginPath();
+        context.value.moveTo(element.points[0][0], element.points[0][1]);
+        context.value.lineTo(element.points[1][0], element.points[1][1]);
+        context.value.closePath();
+
+        context.value.stroke();
+
+        // 状态复原
+        context.value.restore();
+    };
+
     const renderElements = (elements: IElement[]) => {
         if (!canvas.value || !context.value) return;
         const normalizedCanvasWidth = canvas.value.width / canvasConfig.zoom;
@@ -123,6 +158,9 @@ export default (
                         break;
                     case OPTION_TYPE.COMPASS:
                         renderCompassElement(element as ICompassElement);
+                        break;
+                    case OPTION_TYPE.RULER:
+                        renderRulerElement(element as IRulerElement);
                         break;
                 }
             }
