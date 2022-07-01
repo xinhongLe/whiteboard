@@ -51,6 +51,7 @@ export enum OPTION_TYPE {
     CLEAR = "CLEAR", // 清空画板
     ERASER = "ERASER", // 橡皮擦
     COMPASS = "COMPASS", // 圆规
+    COMPASS = "RULER", // 直尺
 }
 ```
 
