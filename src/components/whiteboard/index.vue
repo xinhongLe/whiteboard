@@ -243,6 +243,11 @@ const getElements = () => {
     return elements.value;
 };
 
+// 设置元素数据
+const setElements = (data: IElement[]) => {
+    elements.value = data;
+};
+
 defineExpose({
     setScroll,
     setZoom,
@@ -250,7 +255,8 @@ defineExpose({
     setLineWidth,
     setDrawColor,
     render,
-    getElements
+    getElements,
+    setElements
 });
 </script>
 

@@ -72,3 +72,4 @@ export enum OPTION_TYPE {
 | setDrawColor | 设置画笔颜色 | (color: string) => void |
 | render | 绘制渲染 | () => void |
 | getElements | 获取绘制元素集合 | () => IElement[] |
+| setElements | 设置绘制元素集合 | (elements: IElement[]) => void |
