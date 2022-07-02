@@ -24,20 +24,26 @@ const options = ref({
     offsetY: 0
 });
 
-onMounted(() => {
-    // 初始化黑板
+const resize = () => {
+    // 窗口发生变化重新计算距离
     const { x, y } = whiteboardBox.value.getBoundingClientRect();
     options.value = {
         offsetX: x,
         offsetY: y
     };
+}
+
+onMounted(() => {
+    // 初始化黑板
+    resize();
+    window.addEventListener("resize", resize);
     whiteboard.value.setOptionType(OPTION_TYPE.PEN);
 });
 </script>
 
 <style>
 .white-board-box {
-    width: 1000px;
+    width: 100%;
     height: 600px;
 }
 </style>
@@ -51,7 +57,8 @@ export enum OPTION_TYPE {
     CLEAR = "CLEAR", // 清空画板
     ERASER = "ERASER", // 橡皮擦
     COMPASS = "COMPASS", // 圆规
-    COMPASS = "RULER", // 直尺
+    RULER = "RULER", // 直尺
+    PROTRACTOR = "PROTRACTOR", // 量角器
 }
 ```
 

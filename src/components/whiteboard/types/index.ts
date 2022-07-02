@@ -17,7 +17,7 @@
  */
 interface IBaseElement {
     id: string;
-    type: "PEN" | "COMPASS" | "RULER";
+    type: "PEN" | "COMPASS" | "RULER" | "ERASER";
     angle: number;
     isDelete: boolean;
     locked: boolean;

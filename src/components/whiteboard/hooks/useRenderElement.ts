@@ -21,6 +21,11 @@ export default (
     context: Ref<CanvasRenderingContext2D | null>,
     canvasConfig: ICanvasConfig
 ) => {
+    const lastPos = {
+        x: 0,
+        y: 0
+    };
+
     // 绘制笔记
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
@@ -54,11 +59,8 @@ export default (
 
         // 绘制笔记
         context.value.fillStyle = element.strokeColor;
-        context.value.strokeStyle = element.strokeColor;
         const path = getPenSvgPath(element.points, element.lineWidth);
         context.value.fill(path);
-
-        context.value.stroke();
 
         // 状态复原
         context.value.restore();
@@ -137,6 +139,49 @@ export default (
         context.value.restore();
     };
 
+    const renderEraserElement = (element: IPenElement) => {
+        // 点少于两个时不进行绘制
+        if (element.points.length < 2 || !context.value) return;
+        const [x1, y1, x2, y2] = getElementBoundsCoords(element);
+
+        // cx, cy 最小矩形中心点在canvas中的位置
+        const cx = (x1 + x2) / 2 + canvasConfig.scrollX;
+        const cy = (y1 + y2) / 2 + canvasConfig.scrollY;
+
+        // 笔记起始点相对于最小矩形中心点偏移位置
+        const shiftX = (x2 - x1) / 2 - (element.x - x1);
+        const shiftY = (y2 - y1) / 2 - (element.y - y1);
+
+        // 存储状态
+        context.value.save();
+
+        // 缩放
+        context.value.scale(
+            window.devicePixelRatio * canvasConfig.zoom,
+            window.devicePixelRatio * canvasConfig.zoom
+        );
+
+        // 移动坐标系原点
+        context.value.translate(cx, cy);
+        // 坐标原点移动到笔记起始位置
+        context.value.translate(-shiftX, -shiftY);
+
+        context.value.fillStyle = "transparent";
+        const path = getPenSvgPath(element.points, element.lineWidth * 1.5);
+        context.value.fill(path);
+
+        context.value.clip(path);
+
+        // 还原坐标系
+        context.value.translate(shiftX, shiftY);
+        context.value.translate(-cx, -cy);
+
+        context.value.clearRect(0, 0, canvas.value!.width, canvas.value!.height);
+
+        // 状态复原
+        context.value.restore();
+    };
+
     const renderElements = (elements: IElement[]) => {
         if (!canvas.value || !context.value) return;
         const normalizedCanvasWidth = canvas.value.width / canvasConfig.zoom;
@@ -161,6 +206,9 @@ export default (
                         break;
                     case OPTION_TYPE.RULER:
                         renderRulerElement(element as IRulerElement);
+                        break;
+                    case OPTION_TYPE.ERASER:
+                        renderEraserElement(element as IPenElement);
                         break;
                 }
             }

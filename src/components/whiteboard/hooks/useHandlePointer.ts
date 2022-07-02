@@ -20,7 +20,7 @@ export default (
     elements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig
 ) => {
-    const { createPenElement } = useCreateElement(elements, canvasConfig);
+    const { createPenElement, createEraserElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
     let targetElement: IElement | null = null;
@@ -57,7 +57,7 @@ export default (
             }
             case OPTION_TYPE.ERASER: {
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                startPoint = [x, y];
+                targetElement = createEraserElement({ x, y });
                 canvasConfig.isDrawing = true;
                 break;
             }
@@ -71,34 +71,36 @@ export default (
                 canvasMove(event);
                 break;
             }
+            case OPTION_TYPE.ERASER:
             case OPTION_TYPE.PEN: {
                 if (!canvasConfig.isDrawing || !targetElement) return;
                 const { x, y } = getCanvasPointPosition(event, canvasConfig);
                 drawOnCanvas(x, y);
                 break;
             }
-            case OPTION_TYPE.ERASER: {
-                if (!canvasConfig.isDrawing || !startPoint) return;
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
-                const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
-                const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
-                checkCrossElements(
-                    startPoint,
-                    x,
-                    y,
-                    visibleElements
-                );
-                renderElements(elements.value);
-                startPoint = [x, y];
-                break;
-            }
+            // case OPTION_TYPE.ERASER: {
+            //     if (!canvasConfig.isDrawing || !startPoint) return;
+            //     const { x, y } = getCanvasPointPosition(event, canvasConfig);
+            //     const normalizedCanvasWidth = canvas.value!.width / canvasConfig.zoom;
+            //     const normalizedCanvasHeight = canvas.value!.height / canvasConfig.zoom;
+            //     const visibleElements = getVisibleElements(elements.value, canvasConfig.scrollX, canvasConfig.scrollY, normalizedCanvasWidth, normalizedCanvasHeight);
+            //     checkCrossElements(
+            //         startPoint,
+            //         x,
+            //         y,
+            //         visibleElements
+            //     );
+            //     renderElements(elements.value);
+            //     startPoint = [x, y];
+            //     break;
+            // }
         }
     });
 
     const drawOnCanvas = (x: number, y: number) => {
         if (!targetElement) return;
         switch (targetElement.type) {
+            case OPTION_TYPE.ERASER:
             case OPTION_TYPE.PEN: {
                 const points = (targetElement as IPenElement).points;
                 updateElement(targetElement, {
@@ -119,6 +121,7 @@ export default (
                 canvasMove(event);
                 break;
             }
+            case OPTION_TYPE.ERASER:
             case OPTION_TYPE.PEN: {
                 if (!canvasConfig.isDrawing || !targetElement) return;
                 const points = (targetElement as IPenElement).points;
@@ -149,13 +152,13 @@ export default (
                 renderElements(elements.value);
                 break;
             }
-            case OPTION_TYPE.ERASER: {
-                if (!canvasConfig.isDrawing) return;
-                // 橡皮擦模式在结束时过滤掉删除的元素
-                elements.value = elements.value.filter(element => !element.isDelete);
-                renderElements(elements.value);
-                break;
-            }
+            // case OPTION_TYPE.ERASER: {
+            //     if (!canvasConfig.isDrawing) return;
+            //     // 橡皮擦模式在结束时过滤掉删除的元素
+            //     elements.value = elements.value.filter(element => !element.isDelete);
+            //     renderElements(elements.value);
+            //     break;
+            // }
         }
         targetElement = null;
         startPoint = null;

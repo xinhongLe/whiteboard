@@ -56,9 +56,27 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
         });
     };
 
+    const createEraserElement = ({ x, y }: ICenter) => {
+        return createElement({
+            id: createRandomCode(),
+            type: OPTION_TYPE.ERASER,
+            width: 0,
+            height: 0,
+            x,
+            y,
+            points: [[0, 0]],
+            angle: 0,
+            isDelete: false,
+            locked: false,
+            lineWidth: canvasConfig.lineWidth,
+            strokeColor: canvasConfig.strokeColor
+        });
+    };
+
     return {
         createPenElement,
         createCompassElement,
-        createRulerElement
+        createRulerElement,
+        createEraserElement
     };
 };
