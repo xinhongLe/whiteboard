@@ -58,7 +58,7 @@ export default (
                     });
 
                     twoPointCenter = getTouchesCenter(event.touches);
-                } else if (event instanceof TouchEvent && event.touches.length === 1 || event instanceof PointerEvent) {
+                } else {
                     const { x, y } = getWhiteBoardPointPosition(
                         event,
                         canvasConfig
@@ -86,25 +86,27 @@ export default (
         // 绘制
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                if (event instanceof TouchEvent && event.touches.length === 2) {
-                    const newTwoPointLen =  getDistance({
-                        x: event.touches[0].clientX,
-                        y: event.touches[0].clientY
-                    }, {
-                        x: event.touches[1].clientX,
-                        y: event.touches[1].clientY
-                    });
-
-                    const changeZoom = (newTwoPointLen - twoPointLen) / twoPointLen;
-                    let newZoom = changeZoom > 0 ? canvasConfig.zoom + 0.05 : canvasConfig.zoom - 0.05;
-                    
-                    if (newZoom < 0.1) newZoom = 0.1;
-                    const oldZoom = canvasConfig.zoom;
-                    canvasConfig.zoom = newZoom;
-                    twoPointLen = newTwoPointLen;
-                    updateScroll(newZoom, oldZoom, twoPointCenter.x, twoPointCenter.y);
-                    renderElements(elements.value);
-                } else if (event instanceof TouchEvent && event.touches.length === 1 || event instanceof PointerEvent) {
+                if (event instanceof TouchEvent) {
+                    if (event.touches.length === 2) {
+                        const newTwoPointLen =  getDistance({
+                            x: event.touches[0].clientX,
+                            y: event.touches[0].clientY
+                        }, {
+                            x: event.touches[1].clientX,
+                            y: event.touches[1].clientY
+                        });
+    
+                        const changeZoom = (newTwoPointLen - twoPointLen) / twoPointLen;
+                        let newZoom = changeZoom > 0 ? canvasConfig.zoom + 0.05 : canvasConfig.zoom - 0.05;
+                        
+                        if (newZoom < 0.1) newZoom = 0.1;
+                        const oldZoom = canvasConfig.zoom;
+                        canvasConfig.zoom = newZoom;
+                        twoPointLen = newTwoPointLen;
+                        updateScroll(newZoom, oldZoom, twoPointCenter.x, twoPointCenter.y);
+                        renderElements(elements.value);
+                    }
+                } else {
                     canvasMove(event);
                 }
                 break;
@@ -156,9 +158,7 @@ export default (
     const handleUp = (event: PointerEvent | TouchEvent) => {
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                if (event instanceof PointerEvent) {
-                    canvasMove(event);
-                }
+                canvasMove(event);
                 break;
             }
             case OPTION_TYPE.ERASER:
