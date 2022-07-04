@@ -68,8 +68,8 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
             angle: 0,
             isDelete: false,
             locked: false,
-            lineWidth: canvasConfig.lineWidth,
-            strokeColor: canvasConfig.strokeColor
+            lineWidth: 30,
+            strokeColor: "transparent"
         });
     };
 

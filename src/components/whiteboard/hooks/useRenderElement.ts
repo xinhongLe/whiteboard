@@ -167,7 +167,7 @@ export default (
         context.value.translate(-shiftX, -shiftY);
 
         context.value.fillStyle = "transparent";
-        const path = getPenSvgPath(element.points, element.lineWidth * 1.5);
+        const path = getPenSvgPath(element.points, element.lineWidth);
         context.value.fill(path);
 
         context.value.clip(path);
