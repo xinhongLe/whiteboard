@@ -10,8 +10,14 @@
     <button @click="addLineWidth()">变粗</button>
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
+    &nbsp;<span>滚动 ({{(-scrollX).toFixed(0)}}/{{(-scrollY).toFixed(0)}})</span> <span>缩放 {{(zoom * 100).toFixed(0)}}%</span>
     <div class="white-board-box" ref="whiteboardBox">
-        <WhiteBoard :options="options" ref="whiteboard" />
+        <WhiteBoard
+            :options="options"
+            ref="whiteboard"
+            @scrollChange="scrollChange"
+            @zoomChange="zoomChange"
+        />
     </div>
 </template>
 
@@ -33,19 +39,21 @@ export default defineComponent({
             offsetY: 0
         });
         const zoom = ref(1);
+        const scrollX = ref(0);
+        const scrollY = ref(0);
         const resize = () => {
             const { x, y } = whiteboardBox.value.getBoundingClientRect();
             options.value = {
                 offsetX: x,
                 offsetY: y
             };
-        }
+        };
         onMounted(() => {
             resize();
 
             window.addEventListener("resize", resize);
 
-            whiteboard.value.setOptionType(OPTION_TYPE.PROTRACTOR);
+            whiteboard.value.setOptionType(OPTION_TYPE.PEN);
         });
         onUnmounted(() => {
             window.removeEventListener("resize", resize);
@@ -69,6 +77,14 @@ export default defineComponent({
             width -= 5;
             whiteboard.value.setLineWidth(width);
         };
+        const scrollChange = (scroll: { scrollX: number; scrollY: number }) => {
+            scrollX.value = scroll.scrollX;
+            scrollY.value = scroll.scrollY;
+        };
+
+        const zoomChange = (value: number) => {
+            zoom.value = value
+        };
         return {
             whiteboard,
             whiteboardBox,
@@ -79,13 +95,21 @@ export default defineComponent({
             OPTION_TYPE,
             getElements,
             addLineWidth,
-            reduceLineWidth
-        }
+            reduceLineWidth,
+            scrollChange,
+            zoomChange,
+            scrollX,
+            scrollY
+        };
     }
 });
 </script>
 
 <style lang="scss">
+body {
+    overflow: hidden;
+}
+
 #app {
     font-family: Avenir, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;

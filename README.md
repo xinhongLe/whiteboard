@@ -62,14 +62,31 @@ export enum OPTION_TYPE {
 }
 ```
 
+## 黑板属性
+| 属性 | 描述 | 类型 | 默认 |
+| ----------- | ----------- | ----------- | ----------- |
+| options | 配置参数(浏览器可视区域左上角距离) | { offsetX: number; offsetX: number; } | { offsetX: 0, offsetY: 0 } |
+
+## 黑板事件
+| 事件名 | 描述 | 回调参数 |
+| ----------- | ----------- | ----------- |
+| scrollChange | 当发生滚动是触发回调 | (scroll: { scrollX: number, scrollY: number }) |
+| zoomChange | 当发生缩放是触发回调 | (zoom: number) |
+
 ## 黑板开放的方法
-| 方法 | 描述 | 类型
+| 方法 | 描述 | 类型 |
 | ----------- | ----------- | ----------- |
 | setScroll | 设置画布上下左右的滑动 | (x: number, y: number) => void |
-| setZoom | 设置画布缩放 | (zoom: number) => void |
+| setZoom | 设置画布缩放(最小0.1) | (zoom: number) => void |
 | setOptionType | 设置绘制的模式 | (type: OPTION_TYPE) => void |
 | setLineWidth | 设置画笔粗细 | (width: number) => void |
 | setDrawColor | 设置画笔颜色 | (color: string) => void |
 | render | 绘制渲染 | () => void |
 | getElements | 获取绘制元素集合 | () => IElement[] |
 | setElements | 设置绘制元素集合 | (elements: IElement[]) => void |
+| reset | 复位 | () => void |
+| clear | 清空元素 | () => void |
+
+
+------------------------------------------
+***【注】使用黑板时不要存在滚动轴，在每次操作会影响到画板展示样子的方法时，需要看到变化后的效果，都需要手动调用render方法来重绘黑板。***

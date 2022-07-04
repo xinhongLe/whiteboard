@@ -29,11 +29,11 @@ export const getCanvasPointPosition = (
 ) => {
     const x =
         event instanceof TouchEvent
-            ? event.targetTouches[0].clientX
+            ? (event.targetTouches[0]?.clientX | event.changedTouches[0].clientX)
             : event instanceof PointerEvent ? event.clientX : event.x;
     const y =
         event instanceof TouchEvent
-            ? event.targetTouches[0].clientY
+            ? (event.targetTouches[0]?.clientY | event.changedTouches[0].clientY)
             : event instanceof PointerEvent ? event.clientY :  event.y;
     return {
         x:
@@ -55,11 +55,11 @@ export const getWhiteBoardPointPosition = (
 ) => {
     const x =
         event instanceof TouchEvent
-            ? event.targetTouches[0].clientX
+            ? (event.targetTouches[0]?.clientX | event.changedTouches[0].clientX)
             : event instanceof PointerEvent ? event.clientX : event.x;
     const y =
         event instanceof TouchEvent
-            ? event.targetTouches[0].clientY
+            ? (event.targetTouches[0]?.clientY | event.changedTouches[0].clientY)
             : event instanceof PointerEvent ? event.clientY :  event.y;
     return {
         x: (x - canvasConfig.offsetX) / canvasConfig.zoom,

@@ -33,8 +33,9 @@ export default (
             delta = MAX_STEP * sign;
         }
 
-        const newZoom = canvasConfig.zoom - delta / 100;
+        let newZoom = canvasConfig.zoom - delta / 100;
         const oldZoom = canvasConfig.zoom;
+        if (newZoom < 0.1) newZoom = 0.1
         canvasConfig.zoom = newZoom;
         updateScroll(newZoom, oldZoom, x, y);
     };

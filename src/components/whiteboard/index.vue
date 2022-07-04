@@ -45,6 +45,7 @@ import {
     reactive,
     onUnmounted,
     computed,
+    defineEmits,
     defineProps,
     defineExpose,
     PropType,
@@ -62,6 +63,8 @@ import useDrawElement from "./hooks/useDrawElement";
 import Compass from "./components/compass/index.vue";
 import Ruler from "./components/ruler/index.vue";
 import Protractor from "./components/protractor/index.vue";
+
+const emit = defineEmits(["scrollChange", "zoomChange"]);
 
 const props = defineProps({
     options: {
@@ -114,6 +117,17 @@ const canvasConfig = reactive<ICanvasConfig>({
     strokeColor: "#f60000",
     isDrawing: false,
     isMoveOrScale: false
+});
+
+watch([() => canvasConfig.scrollX, () => canvasConfig.scrollY], () => {
+    emit("scrollChange", {
+        scrollX: canvasConfig.scrollX,
+        scrollY: canvasConfig.scrollY
+    });
+});
+
+watch(() => canvasConfig.zoom, () => {
+    emit("zoomChange", canvasConfig.zoom);
 });
 
 // 是否支持触摸
@@ -216,6 +230,7 @@ const setScroll = (x: number, y: number) => {
 
 // 画布缩放
 const setZoom = (zoom: number) => {
+    if (zoom < 0.1) return (canvasConfig.zoom = 0.1);
     canvasConfig.zoom = zoom;
 };
 
@@ -249,6 +264,18 @@ const setElements = (data: IElement[]) => {
     elements.value = data;
 };
 
+// 复位
+const reset = () => {
+    canvasConfig.zoom = 1;
+    canvasConfig.scrollX = 0;
+    canvasConfig.scrollY = 0;
+};
+
+// 清空元素
+const clear = () => {
+    elements.value = [];
+};
+
 defineExpose({
     setScroll,
     setZoom,
@@ -257,7 +284,9 @@ defineExpose({
     setDrawColor,
     render,
     getElements,
-    setElements
+    setElements,
+    reset,
+    clear
 });
 </script>
 
