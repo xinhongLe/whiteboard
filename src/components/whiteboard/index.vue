@@ -59,7 +59,6 @@ import { throttle } from "lodash";
 import useHandlePointer from "./hooks/useHandlePointer";
 import useRenderElement from "./hooks/useRenderElement";
 import useZoom from "./hooks/useZoom";
-import useClearElement from "./hooks/useClearElement";
 import useDrawElement from "./hooks/useDrawElement";
 import Compass from "./components/compass/index.vue";
 import Ruler from "./components/ruler/index.vue";
@@ -144,30 +143,13 @@ const { handleDown, handleMove, handleUp } = useHandlePointer(
     canvasConfig
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
-const { updateScroll, handleWeel } = useZoom(canvas, canvasConfig);
+const { handleWeel } = useZoom(canvas, canvasConfig);
 const { drawStart, drawing, drawEnd } = useDrawElement(
     canvas,
     context,
     elements,
     canvasConfig
 );
-const { clearElements } = useClearElement(
-    canvas,
-    context,
-    elements,
-    canvasConfig
-);
-
-// 进行缩放
-const zoomChange = (newZoom: number, oldZoom: number) => {
-    updateScroll(
-        newZoom,
-        oldZoom,
-        canvas.value!.width / 2,
-        canvas.value!.height / 2
-    );
-    renderElements(elements.value);
-};
 
 const wheelScaleCanvas = throttle((event: WheelEvent) => {
     if (canvasConfig.optionType === OPTION_TYPE.MOUSE) {

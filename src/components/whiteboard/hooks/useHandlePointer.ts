@@ -2,13 +2,10 @@ import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
 import { ICanvasConfig, IElement, IPenElement, IPoint } from "../types";
 import {
-    checkCrossElements,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
     getDistance,
-    getPositionElement,
     getTouchesCenter,
-    getVisibleElements,
     getWhiteBoardPointPosition,
     throttleRAF
 } from "../utils";

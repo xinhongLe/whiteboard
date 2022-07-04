@@ -126,7 +126,7 @@ export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
  * @param element
  */
 export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
-    if (element.type === OPTION_TYPE.PEN) {
+    if (element.type === OPTION_TYPE.PEN || element.type === OPTION_TYPE.ERASER) {
         const [minX, minY, maxX, maxY] = getBoundsCoordsFromPoints(
             (element as IPenElement).points
         );

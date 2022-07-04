@@ -2,15 +2,12 @@ import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
 import {
     ICanvasConfig,
-    ICompassData,
     ICompassElement,
     IElement,
     IPenElement,
-    IPoint,
     IRulerElement
 } from "../types";
 import {
-    getBoundsCoordsFromPoints,
     getElementBoundsCoords,
     getPenSvgPath,
     getVisibleElements
@@ -21,11 +18,6 @@ export default (
     context: Ref<CanvasRenderingContext2D | null>,
     canvasConfig: ICanvasConfig
 ) => {
-    const lastPos = {
-        x: 0,
-        y: 0
-    };
-
     // 绘制笔记
     const renderPenElement = (element: IPenElement) => {
         // 点少于两个时不进行绘制
@@ -194,8 +186,9 @@ export default (
             normalizedCanvasWidth,
             normalizedCanvasHeight
         );
+        console.log(visibleElements);
         // 绘制canvas
-        elements.forEach((element) => {
+        visibleElements.forEach((element) => {
             if (!element.isDelete) {
                 switch (element.type) {
                     case OPTION_TYPE.PEN:
