@@ -96,6 +96,11 @@ const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 const eraserIcon = require("./assets/images/circle.svg");
 
+// 禁用触摸屏下双指触发右键菜单 影响缩放
+document.oncontextmenu = () => {
+    return false;
+};
+
 const cursor = computed(() => {
     if (canvasConfig.isMoveOrScale) return "grabbing";
     return {
