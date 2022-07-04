@@ -149,6 +149,7 @@ const getCompassCenter = () => {
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
@@ -207,6 +208,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
 
 const handleMouseMove = (event: MouseEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
