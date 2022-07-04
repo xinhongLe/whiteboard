@@ -5,7 +5,9 @@ import {
     checkCrossElements,
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
+    getDistance,
     getPositionElement,
+    getTouchesCenter,
     getVisibleElements,
     getWhiteBoardPointPosition,
     throttleRAF
@@ -13,6 +15,7 @@ import {
 import useCreateElement from "./useCreateElement";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
+import useZoom from "./useZoom";
 
 export default (
     canvas: Ref<HTMLCanvasElement | null>,
@@ -23,8 +26,13 @@ export default (
     const { createPenElement, createEraserElement } = useCreateElement(elements, canvasConfig);
     const { updateElement } = useUpdateElement();
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
+    const { updateScroll } = useZoom(canvas, canvasConfig);
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
+    // 两指间距离
+    let twoPointLen = 0;
+    // 两指间中心点
+    let twoPointCenter = { x: 0, y: 0 };
 
     const canvasMove = (event: PointerEvent | TouchEvent) => {
         if (startPoint) {
@@ -42,11 +50,24 @@ export default (
     const handleDown = (event: PointerEvent | TouchEvent) => {
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                const { x, y } = getWhiteBoardPointPosition(
-                    event,
-                    canvasConfig
-                );
-                startPoint = [x, y];
+                if (event instanceof TouchEvent && event.touches.length === 2) {
+                    // 两指触控 执行放大操作
+                    twoPointLen =  getDistance({
+                        x: event.touches[0].clientX,
+                        y: event.touches[0].clientY
+                    }, {
+                        x: event.touches[1].clientX,
+                        y: event.touches[1].clientY
+                    });
+
+                    twoPointCenter = getTouchesCenter(event.touches);
+                } else {
+                    const { x, y } = getWhiteBoardPointPosition(
+                        event,
+                        canvasConfig
+                    );
+                    startPoint = [x, y];
+                }
                 break;
             }
             case OPTION_TYPE.PEN: {
@@ -68,7 +89,21 @@ export default (
         // 绘制
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
-                canvasMove(event);
+                if (event instanceof TouchEvent && event.touches.length === 2) {
+                    const newTwoPointLen =  getDistance({
+                        x: event.touches[0].clientX,
+                        y: event.touches[0].clientY
+                    }, {
+                        x: event.touches[1].clientX,
+                        y: event.touches[1].clientY
+                    });
+
+                    const newZoom = (newTwoPointLen - twoPointLen) / twoPointLen;
+                    twoPointLen = newTwoPointLen;
+                    updateScroll(newZoom, canvasConfig.zoom, twoPointCenter.x, twoPointCenter.y);
+                } else {
+                    canvasMove(event);
+                }
                 break;
             }
             case OPTION_TYPE.ERASER:

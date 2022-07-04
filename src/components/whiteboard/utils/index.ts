@@ -487,3 +487,24 @@ export const getAngle = (x: number, y: number) => {
 
     return x > 0 ? (y > 0 ? angle : -angle) : y > 0 ? 180 - angle : angle - 180;
 };
+
+/**
+ * 获取两点间距离
+ * @param start 
+ * @param stop 
+ * @returns 
+ */
+export const getDistance = (start: { x: number, y: number }, stop: { x: number, y: number }) => {
+    return Math.hypot(stop.x - start.x, stop.y - start.y);
+};
+
+/**
+ * 获取两指中心点
+ * @param touchList 
+ * @returns 
+ */
+export const getTouchesCenter = (touchList: TouchList) => {
+    const pointOne = touchList[0];
+    const pointTwo = touchList[1];
+    return { x: (pointOne.pageX + pointTwo.pageX) / 2, y: (pointOne.pageY + pointTwo.pageY) / 2 };
+};
