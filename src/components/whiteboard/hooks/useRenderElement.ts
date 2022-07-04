@@ -186,7 +186,7 @@ export default (
             normalizedCanvasWidth,
             normalizedCanvasHeight
         );
-        console.log(visibleElements);
+        
         // 绘制canvas
         visibleElements.forEach((element) => {
             if (!element.isDelete) {

@@ -131,10 +131,10 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
             (element as IPenElement).points
         );
         return [
-            minX + (element as IPenElement).x,
-            minY + (element as IPenElement).y,
-            maxX + (element as IPenElement).x,
-            maxY + (element as IPenElement).y
+            minX + (element as IPenElement).x - element.lineWidth / 2,
+            minY + (element as IPenElement).y - element.lineWidth / 2,
+            maxX + (element as IPenElement).x - element.lineWidth / 2,
+            maxY + (element as IPenElement).y - element.lineWidth / 2
         ];
     }
 
@@ -152,10 +152,10 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
             (element as IRulerElement).points
         );
         return [
-            minX - (element as IRulerElement).lineWidth / 2,
-            minY - (element as IRulerElement).lineWidth / 2,
-            maxX + (element as IRulerElement).lineWidth / 2,
-            maxY + (element as IRulerElement).lineWidth / 2
+            minX + (element as IPenElement).x - (element as IRulerElement).lineWidth / 2,
+            minY + (element as IPenElement).y - (element as IRulerElement).lineWidth / 2,
+            maxX + (element as IPenElement).x  + (element as IRulerElement).lineWidth / 2,
+            maxY + (element as IPenElement).y  + (element as IRulerElement).lineWidth / 2
         ]
     }
 
