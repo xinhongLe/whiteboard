@@ -261,6 +261,8 @@ onUnmounted(() => {
     background-color: rgba(248, 248, 248, 0.8);
     cursor: move;
     transform-origin: bottom center;
+    background-image: url(./images/protractor.svg);
+    background-size: 100% 100%;
 }
 
 .protractor-angle {
@@ -277,7 +279,7 @@ onUnmounted(() => {
     position: absolute;
     width: calc(50% + 30px);
     border-top: 2px solid rgb(0, 123, 195);
-    bottom: -1px;
+    bottom: 2px;
     left: 50%;
     transform-origin: center left;
     .protractor-angle-circle {
@@ -318,7 +320,7 @@ onUnmounted(() => {
     &.protractor-close {
         margin-left: 20px;
         cursor: pointer;
-        left: 20px;
+        left: 16%;
         bottom: 20px;
     }
 
@@ -327,13 +329,13 @@ onUnmounted(() => {
         cursor: default;
         left: 50%;
         transform: translateX(-50%) rotate(90deg);
-        top: 20px;
+        top: 35%;
     }
 
     &.protractor-rotate {
         margin-right: 20px;
         cursor: default;
-        right: 20px;
+        right: 16%;
         bottom: 20px;
     }
 }
