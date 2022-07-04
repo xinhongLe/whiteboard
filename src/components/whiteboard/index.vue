@@ -50,7 +50,8 @@ import {
     defineExpose,
     PropType,
     watch,
-    toRefs
+    toRefs,
+	provide
 } from "vue";
 import { IElement, ICanvasConfig, IOptionsConfig } from "./types";
 import { OPTION_TYPE } from "./config";
@@ -132,6 +133,7 @@ watch(() => canvasConfig.zoom, () => {
 
 // 是否支持触摸
 const canTouch = "ontouchstart" in window;
+provide("canTouch", canTouch);
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);

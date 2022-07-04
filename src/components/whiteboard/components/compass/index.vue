@@ -57,9 +57,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, defineProps, onMounted, defineEmits, PropType, computed, onUnmounted, nextTick } from "vue";
+import {
+    ref,
+    defineProps,
+    onMounted,
+    defineEmits,
+    PropType,
+    computed,
+    onUnmounted,
+    nextTick,
+    inject
+} from "vue";
 import { ICanvasConfig } from "../../types";
 import { getAngle, getCanvasPointPosition } from "../../utils";
+
+const canTouch = inject("canTouch");
+
 let startAngle = 0;
 let drawAngle = 0;
 let recordAngle = 0;
@@ -90,14 +103,20 @@ const props = defineProps({
 const canvasConfig = computed(() => props.canvasConfig);
 
 onMounted(() => {
-    document.addEventListener("pointerdown", handleMouseDown);
+    document.addEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown
+    );
     nextTick(() => {
         x.value = compass.value.clientWidth / 2 - 109;
     });
 });
 
 onUnmounted(() => {
-    document.removeEventListener("pointerdown", handleMouseDown);
+    document.removeEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown
+    );
 });
 
 const getDrawAngle = (x: number, y: number) => {
@@ -126,12 +145,18 @@ const getCompassCenter = () => {
     const { x, y } = compassCenter.value.getBoundingClientRect();
     // return getWhiteBoardPointPosition({ x: x as number, y: y as number }, canvasConfig.value);
     return { x, y };
-}
+};
 
-const handleMouseDown = (event: PointerEvent) => {
+const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
+    const mouseX =
+        event instanceof TouchEvent
+            ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
+            : event.clientX;
+    const mouseY =
+        event instanceof TouchEvent
+            ? event.targetTouches[0]?.clientY | event.changedTouches[0].clientY
+            : event.clientY;
     center = getCompassCenter();
     drawPoint = getDrawPointer();
     if (
@@ -173,14 +198,23 @@ const handleMouseDown = (event: PointerEvent) => {
         });
     }
 
-    document.addEventListener("pointermove", handleMouseMove);
-    document.addEventListener("pointerup", handleEnd);
+    document.addEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove
+    );
+    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
 };
 
-const handleMouseMove = (event: MouseEvent) => {
+const handleMouseMove = (event: MouseEvent | TouchEvent) => {
     event.stopPropagation();
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
+    const mouseX =
+        event instanceof TouchEvent
+            ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
+            : event.clientX;
+    const mouseY =
+        event instanceof TouchEvent
+            ? event.targetTouches[0]?.clientY | event.changedTouches[0].clientY
+            : event.clientY;
     if (mode === "setAngle" || mode === "draw") {
         const moveX = mouseX - startPoint[0];
         const moveY = mouseY - startPoint[1];
@@ -219,8 +253,14 @@ const handleMouseMove = (event: MouseEvent) => {
 
             recordAngle = angle;
 
-            const drawCanvasPoint = getCanvasPointPosition(drawPoint, canvasConfig.value);
-            r = Math.hypot(drawCanvasPoint.x - canvasCircleCenter.x, drawCanvasPoint.y - canvasCircleCenter.y);
+            const drawCanvasPoint = getCanvasPointPosition(
+                drawPoint,
+                canvasConfig.value
+            );
+            r = Math.hypot(
+                drawCanvasPoint.x - canvasCircleCenter.x,
+                drawCanvasPoint.y - canvasCircleCenter.y
+            );
 
             compassAngle = ((2 * Math.asin(r / 2 / 348)) / Math.PI) * 180;
             emit("drawing", {
@@ -253,8 +293,14 @@ const close = () => {
 const handleEnd = () => {
     emit("drawEnd");
     mode = "";
-    document.removeEventListener("pointermove", handleMouseMove);
-    document.removeEventListener("pointerup", handleEnd);
+    document.removeEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove
+    );
+    document.removeEventListener(
+        canTouch ? "touchend" : "pointerup",
+        handleEnd
+    );
 };
 </script>
 
