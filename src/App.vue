@@ -10,6 +10,7 @@
     <button @click="addLineWidth()">变粗</button>
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
+    <button @click="reset()">复位</button>
     &nbsp;<span>滚动 ({{(-scrollX).toFixed(0)}}/{{(-scrollY).toFixed(0)}})</span> <span>缩放 {{(zoom * 100).toFixed(0)}}%</span>
     <div class="white-board-box" ref="whiteboardBox">
         <WhiteBoard
@@ -60,7 +61,6 @@ export default defineComponent({
         });
         const setZoom = (zoom: number) => {
             whiteboard.value.setZoom(zoom);
-            whiteboard.value.render();
         };
         const setOptionType = (type: OPTION_TYPE) => {
             whiteboard.value.setOptionType(type);
@@ -85,6 +85,11 @@ export default defineComponent({
         const zoomChange = (value: number) => {
             zoom.value = value
         };
+
+        const reset = () => {
+            whiteboard.value.reset();
+        };
+
         return {
             whiteboard,
             whiteboardBox,
@@ -99,7 +104,8 @@ export default defineComponent({
             scrollChange,
             zoomChange,
             scrollX,
-            scrollY
+            scrollY,
+            reset
         };
     }
 });
