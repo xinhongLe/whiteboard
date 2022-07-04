@@ -4,7 +4,7 @@
             ref="canvas"
             :width="canvasWidth"
             :height="canvasHeighth"
-            @mousewheel.prevent="wheelScaleCanvas"
+            @mousewheel.passive="wheelScaleCanvas"
             :style="{
                 width: canvasDomWidth,
                 height: canvasDomHeight,
@@ -51,7 +51,7 @@ import {
     PropType,
     watch,
     toRefs,
-	provide
+    provide
 } from "vue";
 import { IElement, ICanvasConfig, IOptionsConfig } from "./types";
 import { OPTION_TYPE } from "./config";
@@ -131,9 +131,12 @@ watch([() => canvasConfig.scrollX, () => canvasConfig.scrollY], () => {
     });
 });
 
-watch(() => canvasConfig.zoom, () => {
-    emit("zoomChange", canvasConfig.zoom);
-});
+watch(
+    () => canvasConfig.zoom,
+    () => {
+        emit("zoomChange", canvasConfig.zoom);
+    }
+);
 
 // 是否支持触摸
 const canTouch = "ontouchstart" in window;
@@ -168,9 +171,13 @@ nextTick(async () => {
     context.value = canvas.value.getContext("2d");
 
     if (canTouch) {
-        canvas.value.addEventListener("touchstart", handleDown);
-        canvas.value.addEventListener("touchmove", handleMove);
-        canvas.value.addEventListener("touchend", handleUp);
+        canvas.value.addEventListener("touchstart", handleDown, {
+            passive: true
+        });
+        canvas.value.addEventListener("touchmove", handleMove, {
+            passive: true
+        });
+        canvas.value.addEventListener("touchend", handleUp, { passive: true });
     } else {
         canvas.value.addEventListener("pointerdown", handleDown);
         canvas.value.addEventListener("pointermove", handleMove);
@@ -215,12 +222,14 @@ onUnmounted(() => {
 const setScroll = (x: number, y: number) => {
     canvasConfig.scrollX = x;
     canvasConfig.scrollY = y;
+    render();
 };
 
 // 画布缩放
 const setZoom = (zoom: number) => {
     if (zoom < 0.1) return (canvasConfig.zoom = 0.1);
     canvasConfig.zoom = zoom;
+    render();
 };
 
 // 设置操作模式
@@ -251,6 +260,7 @@ const getElements = () => {
 // 设置元素数据
 const setElements = (data: IElement[]) => {
     elements.value = data;
+    render();
 };
 
 // 复位
@@ -258,11 +268,13 @@ const reset = () => {
     canvasConfig.zoom = 1;
     canvasConfig.scrollX = 0;
     canvasConfig.scrollY = 0;
+    render();
 };
 
 // 清空元素
 const clear = () => {
     elements.value = [];
+    render();
 };
 
 defineExpose({

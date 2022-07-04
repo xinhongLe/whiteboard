@@ -105,7 +105,8 @@ const canvasConfig = computed(() => props.canvasConfig);
 onMounted(() => {
     document.addEventListener(
         canTouch ? "touchstart" : "pointerdown",
-        handleMouseDown
+        handleMouseDown,
+        { passive: true }
     );
     nextTick(() => {
         x.value = compass.value.clientWidth / 2 - 109;
@@ -149,6 +150,7 @@ const getCompassCenter = () => {
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
@@ -200,13 +202,17 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
 
     document.addEventListener(
         canTouch ? "touchmove" : "pointermove",
-        handleMouseMove
+        handleMouseMove,
+        { passive: true }
     );
-    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
+    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd, {
+        passive: true
+    });
 };
 
 const handleMouseMove = (event: MouseEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX

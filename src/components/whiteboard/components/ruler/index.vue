@@ -19,7 +19,7 @@
                         viewText === "angle"
                             ? angle + "°"
                             : viewText === "length"
-                            ? length + "cm"
+                            ? Math.abs(length) + "cm"
                             : ""
                     }}
                 </div>
@@ -43,7 +43,7 @@ import {
     defineProps,
     defineEmits,
     onUnmounted,
-	inject
+    inject
 } from "vue";
 import { ICanvasConfig, ICenter } from "../../types";
 import { getAngle, getCanvasPointPosition } from "../../utils";
@@ -88,6 +88,7 @@ const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
@@ -154,12 +155,19 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         });
     }
 
-    document.addEventListener(canTouch ? "touchmove" : "pointermove", handleMouseMove);
-    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
+    document.addEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove,
+        { passive: true }
+    );
+    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd, {
+        passive: true
+    });
 };
 
 const handleMouseMove = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
@@ -206,8 +214,14 @@ const handleMouseMove = (event: PointerEvent | TouchEvent) => {
 const handleEnd = () => {
     mode.value = "";
     emit("drawEnd");
-    document.removeEventListener(canTouch ? "touchmove" : "pointermove", handleMouseMove);
-    document.removeEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
+    document.removeEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove
+    );
+    document.removeEventListener(
+        canTouch ? "touchend" : "pointerup",
+        handleEnd
+    );
 };
 
 const closeRuler = () => {
@@ -220,11 +234,18 @@ onMounted(() => {
         y.value = ruler.value.clientHeight / 2 - 30;
     }
 
-    document.addEventListener(canTouch ? "touchstart" : "pointerdown", handleMouseDown);
+    document.addEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown,
+        { passive: true }
+    );
 });
 
 onUnmounted(() => {
-    document.removeEventListener(canTouch ? "touchstart" : "pointerdown", handleMouseDown);
+    document.removeEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown
+    );
 });
 </script>
 

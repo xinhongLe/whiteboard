@@ -55,7 +55,7 @@ import {
     defineProps,
     computed,
     defineEmits,
-	inject
+    inject
 } from "vue";
 import { ICanvasConfig } from "../../types";
 import { getAngle } from "../../utils";
@@ -87,7 +87,8 @@ let mode = "";
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
-     const mouseX =
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
+    const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
             : event.clientX;
@@ -104,7 +105,8 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
 
     if (
         event.target &&
-        (event.target as Element).className === "protractor-button protractor-resize"
+        (event.target as Element).className ===
+            "protractor-button protractor-resize"
     ) {
         // resize
         mode = "resize";
@@ -112,7 +114,8 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
 
     if (
         event.target &&
-        (event.target as Element).className === "protractor-button protractor-rotate"
+        (event.target as Element).className ===
+            "protractor-button protractor-rotate"
     ) {
         // rotate
         mode = "rotate";
@@ -146,13 +149,20 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         );
     }
 
-    document.addEventListener(canTouch ? "touchmove" : "pointermove", handleMouseMove);
-    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
+    document.addEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove,
+        { passive: true }
+    );
+    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd, {
+        passive: true
+    });
 };
 
 const handleMouseMove = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
-     const mouseX =
+    if (event instanceof TouchEvent && event.touches.length > 1) return;
+    const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
             : event.clientX;
@@ -225,8 +235,14 @@ const handleMouseMove = (event: PointerEvent | TouchEvent) => {
 
 const handleEnd = () => {
     mode = "";
-    document.removeEventListener(canTouch ? "touchmove" : "pointermove", handleMouseMove);
-    document.removeEventListener(canTouch ? "touchend" : "pointerup", handleEnd);
+    document.removeEventListener(
+        canTouch ? "touchmove" : "pointermove",
+        handleMouseMove
+    );
+    document.removeEventListener(
+        canTouch ? "touchend" : "pointerup",
+        handleEnd
+    );
 };
 
 const closeProtractor = () => {
@@ -239,11 +255,18 @@ onMounted(() => {
         y.value = protractor.value.clientHeight / 2;
     }
 
-    document.addEventListener(canTouch ? "touchstart" : "pointerdown", handleMouseDown);
+    document.addEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown,
+        { passive: true }
+    );
 });
 
 onUnmounted(() => {
-    document.removeEventListener(canTouch ? "touchstart" : "pointerdown", handleMouseDown);
+    document.removeEventListener(
+        canTouch ? "touchstart" : "pointerdown",
+        handleMouseDown
+    );
 });
 </script>
 
