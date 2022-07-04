@@ -19,7 +19,7 @@
                         viewText === "angle"
                             ? angle + "°"
                             : viewText === "length"
-                            ? length + "cm"
+                            ? Math.abs(length) + "cm"
                             : ""
                     }}
                 </div>
