@@ -153,11 +153,11 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
-            ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
+            ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
             : event.clientX;
     const mouseY =
         event instanceof TouchEvent
-            ? event.targetTouches[0]?.clientY | event.changedTouches[0].clientY
+            ? event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY
             : event.clientY;
     center = getCompassCenter();
     drawPoint = getDrawPointer();
@@ -215,11 +215,11 @@ const handleMouseMove = (event: MouseEvent | TouchEvent) => {
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
-            ? event.targetTouches[0]?.clientX | event.changedTouches[0].clientX
+            ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
             : event.clientX;
     const mouseY =
         event instanceof TouchEvent
-            ? event.targetTouches[0]?.clientY | event.changedTouches[0].clientY
+            ? event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY
             : event.clientY;
     if (mode === "setAngle" || mode === "draw") {
         const moveX = mouseX - startPoint[0];
