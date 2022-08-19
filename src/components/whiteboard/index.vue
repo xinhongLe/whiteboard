@@ -222,14 +222,12 @@ onUnmounted(() => {
 const setScroll = (x: number, y: number) => {
     canvasConfig.scrollX = x;
     canvasConfig.scrollY = y;
-    render();
 };
 
 // 画布缩放
 const setZoom = (zoom: number) => {
     if (zoom < 0.1) return (canvasConfig.zoom = 0.1);
     canvasConfig.zoom = zoom;
-    render();
 };
 
 // 设置操作模式
@@ -260,7 +258,6 @@ const getElements = () => {
 // 设置元素数据
 const setElements = (data: IElement[]) => {
     elements.value = data;
-    render();
 };
 
 // 复位
@@ -268,7 +265,6 @@ const reset = () => {
     canvasConfig.zoom = 1;
     canvasConfig.scrollX = 0;
     canvasConfig.scrollY = 0;
-    render();
 };
 
 // 清空元素
