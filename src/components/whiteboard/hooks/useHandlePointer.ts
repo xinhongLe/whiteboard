@@ -18,7 +18,8 @@ export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
-    canvasConfig: ICanvasConfig
+    canvasConfig: ICanvasConfig,
+    disabled: Ref<boolean>
 ) => {
     const { createPenElement, createEraserElement } = useCreateElement(
         elements,
@@ -45,6 +46,7 @@ export default (
     };
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
+        if (disabled.value) return;
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
                 if (event instanceof TouchEvent && event.touches.length === 2) {
@@ -87,9 +89,18 @@ export default (
                 break;
             }
         }
+        
+        if (event instanceof TouchEvent) {
+            window.addEventListener("touchmove", handleMove, { passive: true });
+            window.addEventListener("touchend", handleUp, { passive: true });
+        } else {
+            window.addEventListener("pointermove", handleMove);
+            window.addEventListener("pointerup", handleUp);
+        }
     };
 
     const handleMove = throttleRAF((event: PointerEvent | TouchEvent) => {
+        if (disabled.value) return;
         // 绘制
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
@@ -180,6 +191,7 @@ export default (
     };
 
     const handleUp = (event: PointerEvent | TouchEvent) => {
+        if (disabled.value) return;
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
                 if (event instanceof PointerEvent) {
@@ -232,6 +244,14 @@ export default (
         targetElement = null;
         startPoint = null;
         canvasConfig.isDrawing = false;
+
+        if (event instanceof TouchEvent) {
+            window.removeEventListener("touchmove", handleMove);
+            window.removeEventListener("touchend", handleUp);
+        } else {
+            window.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointerup", handleUp);
+        }
     };
 
     return {

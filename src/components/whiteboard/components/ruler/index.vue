@@ -49,6 +49,7 @@ import { ICanvasConfig, ICenter } from "../../types";
 import { getAngle, getCanvasPointPosition } from "../../utils";
 
 const canTouch = inject("canTouch");
+const disabled = inject("disabled");
 
 const props = defineProps({
     canvasConfig: {
@@ -88,6 +89,7 @@ const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
@@ -155,14 +157,17 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         });
     }
 
-    document.addEventListener("pointermove", handleMouseMove, { passive: true });
-    document.addEventListener("touchmove", handleMouseMove, { passive: true });
-    document.addEventListener("pointerup", handleEnd, { passive: true });
-    document.addEventListener("touchend", handleEnd, { passive: true });
-};
+    if (event instanceof TouchEvent) {
+        document.addEventListener("touchmove", handleMouseMove, { passive: true });
+        document.addEventListener("touchend", handleEnd, { passive: true });
+    } else {
+        document.addEventListener("pointermove", handleMouseMove, { passive: true });
+        document.addEventListener("pointerup", handleEnd, { passive: true });
+    }};
 
 const handleMouseMove = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
@@ -207,13 +212,16 @@ const handleMouseMove = (event: PointerEvent | TouchEvent) => {
     }
 };
 
-const handleEnd = () => {
+const handleEnd = (event) => {
     mode.value = "";
     emit("drawEnd");
-    document.removeEventListener("pointermove", handleMouseMove);
-    document.removeEventListener("touchmove", handleMouseMove);
-    document.removeEventListener("pointerup", handleEnd);
-    document.removeEventListener("touchend", handleEnd);
+    if (event instanceof TouchEvent) {
+        document.removeEventListener("touchmove", handleMouseMove);
+        document.removeEventListener("touchend", handleEnd);
+    } else {
+        document.removeEventListener("pointermove", handleMouseMove);
+        document.removeEventListener("pointerup", handleEnd);
+    }
 };
 
 const closeRuler = () => {
@@ -226,13 +234,13 @@ onMounted(() => {
         y.value = ruler.value.clientHeight / 2 - 30;
     }
 
-    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
     document.addEventListener("touchstart", handleMouseDown, { passive: true });
+    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
 });
 
 onUnmounted(() => {
-    document.removeEventListener("pointerdown", handleMouseDown);
     document.removeEventListener("touchstart", handleMouseDown);
+    document.removeEventListener("pointerdown", handleMouseDown);
 });
 </script>
 

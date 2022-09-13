@@ -73,10 +73,14 @@ const props = defineProps({
             offsetX: 0,
             offsetY: 0
         })
+    },
+    disabled: {
+        type: Boolean,
+        default: false
     }
 });
 
-const { options } = toRefs(props);
+const { options, disabled } = toRefs(props);
 
 watch(
     () => props.options,
@@ -141,14 +145,16 @@ watch(
 // 是否支持触摸
 const canTouch = "ontouchstart" in window;
 provide("canTouch", canTouch);
+provide("disabled", disabled.value);
 
 // 绘制元素集合
 const elements = ref<IElement[]>([]);
-const { handleDown, handleMove, handleUp } = useHandlePointer(
+const { handleDown } = useHandlePointer(
     canvas,
     context,
     elements,
-    canvasConfig
+    canvasConfig,
+    disabled
 );
 const { renderElements } = useRenderElement(canvas, context, canvasConfig);
 const { handleWeel } = useZoom(canvas, canvasConfig);
@@ -170,16 +176,8 @@ nextTick(async () => {
     if (!canvas.value || !whiteboard.value) return;
     context.value = canvas.value.getContext("2d");
 
-    canvas.value.addEventListener("touchstart", handleDown, {
-        passive: true
-    });
-    canvas.value.addEventListener("touchmove", handleMove, {
-        passive: true
-    });
-    canvas.value.addEventListener("touchend", handleUp, { passive: true });
-    window.addEventListener("pointerdown", handleDown);
-    window.addEventListener("pointermove", handleMove);
-    window.addEventListener("pointerup", handleUp);
+    canvas.value.addEventListener("touchstart", handleDown, { passive: true });
+    canvas.value.addEventListener("pointerdown", handleDown);
 
     // 区域大小变化重置canvas
     const resize = throttle(() => {
@@ -204,11 +202,7 @@ nextTick(async () => {
 onUnmounted(() => {
     if (canvas.value) {
         canvas.value.removeEventListener("touchstart", handleDown);
-        canvas.value.removeEventListener("touchmove", handleMove);
-        canvas.value.removeEventListener("touchend", handleUp);
         canvas.value.removeEventListener("pointerdown", handleDown);
-        canvas.value.removeEventListener("pointermove", handleMove);
-        canvas.value.removeEventListener("pointerup", handleUp);
     }
 });
 

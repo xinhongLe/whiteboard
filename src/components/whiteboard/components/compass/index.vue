@@ -72,6 +72,7 @@ import { ICanvasConfig } from "../../types";
 import { getAngle, getCanvasPointPosition } from "../../utils";
 
 const canTouch = inject("canTouch");
+const disabled = inject("disabled");
 
 let startAngle = 0;
 let drawAngle = 0;
@@ -111,8 +112,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    document.removeEventListener("pointerdown", handleMouseDown);
     document.removeEventListener("touchstart", handleMouseDown);
+    document.removeEventListener("pointerdown", handleMouseDown);
 });
 
 const getDrawAngle = (x: number, y: number) => {
@@ -145,6 +146,7 @@ const getCompassCenter = () => {
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
+    if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
@@ -195,14 +197,18 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         });
     }
 
-    document.addEventListener("pointermove", handleMouseMove, { passive: true });
-    document.addEventListener("touchmove", handleMouseMove, { passive: true });
-    document.addEventListener("pointerup", handleEnd, { passive: true });
-    document.addEventListener("touchend", handleEnd, { passive: true });
+    if (event instanceof TouchEvent) {
+        document.addEventListener("touchmove", handleMouseMove, { passive: true });
+        document.addEventListener("touchend", handleEnd, { passive: true });
+    } else {
+        document.addEventListener("pointermove", handleMouseMove, { passive: true });
+        document.addEventListener("pointerup", handleEnd, { passive: true });
+    }
 };
 
 const handleMouseMove = (event: MouseEvent | TouchEvent) => {
     event.stopPropagation();
+    if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
@@ -287,13 +293,16 @@ const close = () => {
     emit("close");
 };
 
-const handleEnd = () => {
+const handleEnd = (event) => {
     emit("drawEnd");
     mode = "";
-    document.removeEventListener("pointermove", handleMouseMove);
-    document.removeEventListener("touchmove", handleMouseMove);
-    document.removeEventListener("pointerup", handleEnd);
-    document.removeEventListener("touchend", handleEnd);
+    if (event instanceof TouchEvent) {
+        document.removeEventListener("touchmove", handleMouseMove);
+        document.removeEventListener("touchend", handleEnd);
+    } else {
+        document.removeEventListener("pointermove", handleMouseMove);
+        document.removeEventListener("pointerup", handleEnd);
+    }
 };
 </script>
 
