@@ -155,14 +155,10 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         });
     }
 
-    document.addEventListener(
-        canTouch ? "touchmove" : "pointermove",
-        handleMouseMove,
-        { passive: true }
-    );
-    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd, {
-        passive: true
-    });
+    document.addEventListener("pointermove", handleMouseMove, { passive: true });
+    document.addEventListener("touchmove", handleMouseMove, { passive: true });
+    document.addEventListener("pointerup", handleEnd, { passive: true });
+    document.addEventListener("touchend", handleEnd, { passive: true });
 };
 
 const handleMouseMove = (event: PointerEvent | TouchEvent) => {
@@ -214,14 +210,10 @@ const handleMouseMove = (event: PointerEvent | TouchEvent) => {
 const handleEnd = () => {
     mode.value = "";
     emit("drawEnd");
-    document.removeEventListener(
-        canTouch ? "touchmove" : "pointermove",
-        handleMouseMove
-    );
-    document.removeEventListener(
-        canTouch ? "touchend" : "pointerup",
-        handleEnd
-    );
+    document.removeEventListener("pointermove", handleMouseMove);
+    document.removeEventListener("touchmove", handleMouseMove);
+    document.removeEventListener("pointerup", handleEnd);
+    document.removeEventListener("touchend", handleEnd);
 };
 
 const closeRuler = () => {
@@ -234,18 +226,13 @@ onMounted(() => {
         y.value = ruler.value.clientHeight / 2 - 30;
     }
 
-    document.addEventListener(
-        canTouch ? "touchstart" : "pointerdown",
-        handleMouseDown,
-        { passive: true }
-    );
+    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
+    document.addEventListener("touchstart", handleMouseDown, { passive: true });
 });
 
 onUnmounted(() => {
-    document.removeEventListener(
-        canTouch ? "touchstart" : "pointerdown",
-        handleMouseDown
-    );
+    document.removeEventListener("pointerdown", handleMouseDown);
+    document.removeEventListener("touchstart", handleMouseDown);
 });
 </script>
 

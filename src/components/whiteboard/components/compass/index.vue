@@ -103,21 +103,16 @@ const props = defineProps({
 const canvasConfig = computed(() => props.canvasConfig);
 
 onMounted(() => {
-    document.addEventListener(
-        canTouch ? "touchstart" : "pointerdown",
-        handleMouseDown,
-        { passive: true }
-    );
+    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
+    document.addEventListener("touchstart", handleMouseDown, { passive: true });
     nextTick(() => {
         x.value = compass.value.clientWidth / 2 - 109;
     });
 });
 
 onUnmounted(() => {
-    document.removeEventListener(
-        canTouch ? "touchstart" : "pointerdown",
-        handleMouseDown
-    );
+    document.removeEventListener("pointerdown", handleMouseDown);
+    document.removeEventListener("touchstart", handleMouseDown);
 });
 
 const getDrawAngle = (x: number, y: number) => {
@@ -200,14 +195,10 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         });
     }
 
-    document.addEventListener(
-        canTouch ? "touchmove" : "pointermove",
-        handleMouseMove,
-        { passive: true }
-    );
-    document.addEventListener(canTouch ? "touchend" : "pointerup", handleEnd, {
-        passive: true
-    });
+    document.addEventListener("pointermove", handleMouseMove, { passive: true });
+    document.addEventListener("touchmove", handleMouseMove, { passive: true });
+    document.addEventListener("pointerup", handleEnd, { passive: true });
+    document.addEventListener("touchend", handleEnd, { passive: true });
 };
 
 const handleMouseMove = (event: MouseEvent | TouchEvent) => {
@@ -299,14 +290,10 @@ const close = () => {
 const handleEnd = () => {
     emit("drawEnd");
     mode = "";
-    document.removeEventListener(
-        canTouch ? "touchmove" : "pointermove",
-        handleMouseMove
-    );
-    document.removeEventListener(
-        canTouch ? "touchend" : "pointerup",
-        handleEnd
-    );
+    document.removeEventListener("pointermove", handleMouseMove);
+    document.removeEventListener("touchmove", handleMouseMove);
+    document.removeEventListener("pointerup", handleEnd);
+    document.removeEventListener("touchend", handleEnd);
 };
 </script>
 

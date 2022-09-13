@@ -127,6 +127,6 @@ body {
 
 .white-board-box {
     width: 100%;
-    height: 700px;
+    height: 100vh;
 }
 </style>

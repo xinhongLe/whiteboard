@@ -170,19 +170,16 @@ nextTick(async () => {
     if (!canvas.value || !whiteboard.value) return;
     context.value = canvas.value.getContext("2d");
 
-    if (canTouch) {
-        canvas.value.addEventListener("touchstart", handleDown, {
-            passive: true
-        });
-        canvas.value.addEventListener("touchmove", handleMove, {
-            passive: true
-        });
-        canvas.value.addEventListener("touchend", handleUp, { passive: true });
-    } else {
-        canvas.value.addEventListener("pointerdown", handleDown);
-        canvas.value.addEventListener("pointermove", handleMove);
-        canvas.value.addEventListener("pointerup", handleUp);
-    }
+    canvas.value.addEventListener("touchstart", handleDown, {
+        passive: true
+    });
+    canvas.value.addEventListener("touchmove", handleMove, {
+        passive: true
+    });
+    canvas.value.addEventListener("touchend", handleUp, { passive: true });
+    window.addEventListener("pointerdown", handleDown);
+    window.addEventListener("pointermove", handleMove);
+    window.addEventListener("pointerup", handleUp);
 
     // 区域大小变化重置canvas
     const resize = throttle(() => {
@@ -206,15 +203,12 @@ nextTick(async () => {
 
 onUnmounted(() => {
     if (canvas.value) {
-        if (canTouch) {
-            canvas.value.removeEventListener("touchstart", handleDown);
-            canvas.value.removeEventListener("touchmove", handleMove);
-            canvas.value.removeEventListener("touchend", handleUp);
-        } else {
-            canvas.value.removeEventListener("pointerdown", handleDown);
-            canvas.value.removeEventListener("pointermove", handleMove);
-            canvas.value.removeEventListener("pointerup", handleUp);
-        }
+        canvas.value.removeEventListener("touchstart", handleDown);
+        canvas.value.removeEventListener("touchmove", handleMove);
+        canvas.value.removeEventListener("touchend", handleUp);
+        canvas.value.removeEventListener("pointerdown", handleDown);
+        canvas.value.removeEventListener("pointermove", handleMove);
+        canvas.value.removeEventListener("pointerup", handleUp);
     }
 });
 
