@@ -3,7 +3,7 @@
         <div
             class="compass-box"
             :style="{
-                transform: `translate(${x}px, ${y}px) rotate(${rotate}deg)`
+                transform: `translate(${x}px, ${y}px) rotate(${rotate}deg) scale(${scale})`
             }"
         >
             <div class="compass-head-placeholder"></div>
@@ -42,13 +42,19 @@
             >
                 <div class="compass-close">
                     <div class="close-bg" @click="close()">
-                        <img src="./images/compass/head.svg" />
+                        <img src="./images/head.svg" />
                     </div>
                 </div>
                 <div class="compass-drag-head">
                     <img
                         class="compass-drag-img"
-                        src="./images/compass/move.svg"
+                        src="./images/move.svg"
+                    />
+                </div>
+                <div class="compass-scale">
+                    <img
+                        class="compass-scale-img"
+                        src="./images/resize.svg"
                     />
                 </div>
             </div>
@@ -91,6 +97,7 @@ const rightLegRotate = ref(-15);
 const compass = ref();
 const compassCenter = ref();
 const penArea = ref();
+const scale = ref(0.8);
 
 const emit = defineEmits(["close", "drawStart", "drawing", "drawEnd"]);
 
@@ -158,6 +165,14 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
             : event.clientY;
     center = getCompassCenter();
     drawPoint = getDrawPointer();
+    if (
+        event.target &&
+        (event.target as Element).className === "compass-scale"
+    ) {
+        mode = "setScale";
+        startPoint = [mouseX, mouseY];
+    }
+
     if (
         event.target &&
         (event.target as Element).className === "right-leg-zoom"
@@ -282,6 +297,13 @@ const handleMouseMove = throttleRAF((event: MouseEvent | TouchEvent) => {
         rotate.value = compassAngle / 2 - 15 + angle;
     }
 
+    if (mode === "setScale") {
+        // 灵敏度控制值
+        const sensitivity = 100;
+        scale.value = scale.value + (startPoint[1] - mouseY) / sensitivity;
+        startPoint = [mouseX, mouseY];
+    }
+
     if (mode === "move") {
         x.value = x.value + mouseX - startPoint[0];
         y.value = y.value + mouseY - startPoint[1];
@@ -354,7 +376,7 @@ const handleEnd = (event) => {
 .left-leg-bg {
     height: 348px;
     width: 43px;
-    background-image: url(./images/compass/left-leg.png);
+    background-image: url(./images/left-leg.png);
     background-repeat: no-repeat;
     background-size: 100% 100%;
     display: flex;
@@ -365,7 +387,7 @@ const handleEnd = (event) => {
 .compass-right-leg {
     width: 109px;
     height: 348px;
-    background-image: url(./images/compass/right-leg.png);
+    background-image: url(./images/right-leg.png);
     background-size: 100% 100%;
     transform-origin: 0 0;
 }
@@ -373,7 +395,7 @@ const handleEnd = (event) => {
 .right-leg-zoom {
     width: 32px;
     height: 32px;
-    background-image: url(./images/compass/adjust.svg);
+    background-image: url(./images/adjust.svg);
     background-size: 100% 100%;
     margin: 109px 0 0 57px;
     pointer-events: all;
@@ -425,7 +447,7 @@ const handleEnd = (event) => {
 .compass-drag-head {
     height: 134px;
     width: 78px;
-    background-image: url(./images/compass/head-bg.png);
+    background-image: url(./images/head-bg.png);
     background-size: 100% 100%;
     background-position: center;
     position: relative;
@@ -445,5 +467,28 @@ const handleEnd = (event) => {
     position: absolute;
     left: 0;
     bottom: 0;
+}
+
+.compass-scale {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: 150%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .05);
+    cursor: row-resize;
+}
+
+.compass-scale-img {
+    width: 40px;
+    height: 40px;
+    display: block;
+    -webkit-user-drag: none;
+    pointer-events: none;
 }
 </style>
