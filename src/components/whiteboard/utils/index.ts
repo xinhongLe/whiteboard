@@ -214,12 +214,16 @@ function med(A: number[], B: number[]) {
     return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
 }
 
+const pathsCache = new WeakMap<number[][], Path2D>([]);
+
 /**
  * 处理笔记转化为svg path
  * @param points
  * @returns
  */
 export const getPenSvgPath = (points: number[][], lineWidth: number) => {
+    let path = pathsCache.get(points);
+    if (path) return path;
     const options: StrokeOptions = {
         simulatePressure: true, // 是否基于速度模拟压力
         size: lineWidth,
@@ -227,7 +231,7 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
         smoothing: 0.5,
         streamline: 0.5,
         easing: (t) => Math.sin((t * Math.PI) / 2),
-        last: true
+        last: false
     };
     const storkePoints = getStroke(points, options);
     const max = storkePoints.length - 1;
@@ -245,7 +249,8 @@ export const getPenSvgPath = (points: number[][], lineWidth: number) => {
         )
         .join(" ")
         .replace(TO_FIXED_PRECISION, "$1");
-    const path = new Path2D(svgPathData);
+    path = new Path2D(svgPathData);
+    pathsCache.set(points, path);
     return path;
 };
 
