@@ -58,7 +58,7 @@ import {
     inject
 } from "vue";
 import { ICanvasConfig } from "../../types";
-import { getAngle } from "../../utils";
+import { getAngle, throttleRAF } from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -160,7 +160,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     }
 };
 
-const handleMouseMove = (event: PointerEvent | TouchEvent) => {
+const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
     if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
@@ -233,7 +233,7 @@ const handleMouseMove = (event: PointerEvent | TouchEvent) => {
 
     startPoint.x = mouseX;
     startPoint.y = mouseY;
-};
+});
 
 const handleEnd = (event) => {
     mode = "";
