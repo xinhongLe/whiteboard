@@ -301,6 +301,7 @@ const handleMouseMove = throttleRAF((event: MouseEvent | TouchEvent) => {
         // 灵敏度控制值
         const sensitivity = 100;
         scale.value = scale.value + (startPoint[1] - mouseY) / sensitivity;
+        if (scale.value < 0.5) scale.value = 0.5;
         startPoint = [mouseX, mouseY];
     }
 

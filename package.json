@@ -1,6 +1,6 @@
 {
     "name": "mwhiteboard",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "main": "./dist/whiteboard.umd.min.js",
     "typings": "src/components/whiteboard/index.d.ts",
     "author": "moneyinto",
