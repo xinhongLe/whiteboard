@@ -18,6 +18,7 @@ export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
+    storeElements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig,
     disabled: Ref<boolean>
 ) => {
@@ -184,6 +185,8 @@ export default (
                         ]
                     ]
                 });
+                // 置空恢复暂存
+                storeElements.value = [];
                 break;
             }
         }

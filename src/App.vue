@@ -11,6 +11,8 @@
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
     <button @click="reset()">复位</button>
+    <button @click="undo()" :disabled="!canUndo">撤销</button>
+    <button @click="redo()" :disabled="!canRedo">恢复</button>
     &nbsp;<span>滚动 ({{(-scrollX).toFixed(0)}}/{{(-scrollY).toFixed(0)}})</span> <span>缩放 {{(zoom * 100).toFixed(0)}}%</span>
     <div class="white-board-box" ref="whiteboardBox">
         <WhiteBoard
@@ -23,7 +25,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 import WhiteBoard, { OPTION_TYPE } from "./components/whiteboard";
 
 export default defineComponent({
@@ -90,6 +92,17 @@ export default defineComponent({
             whiteboard.value.reset();
         };
 
+        const undo = () => {
+            whiteboard.value.undo();
+        };
+
+        const redo = () => {
+            whiteboard.value.redo();
+        };
+
+        const canUndo = computed(() => whiteboard.value && whiteboard.value.canUndo);
+        const canRedo = computed(() => whiteboard.value && whiteboard.value.canRedo);
+
         return {
             whiteboard,
             whiteboardBox,
@@ -105,7 +118,11 @@ export default defineComponent({
             zoomChange,
             scrollX,
             scrollY,
-            reset
+            reset,
+            undo,
+            redo,
+            canUndo,
+            canRedo
         };
     }
 });

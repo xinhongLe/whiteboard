@@ -9,6 +9,7 @@ export default (
     canvas: Ref<HTMLCanvasElement | null>,
     context: Ref<CanvasRenderingContext2D | null>,
     elements: Ref<IElement[]>,
+    storeElements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig
 ) => {
     const { updateElement } = useUpdateElement();
@@ -43,6 +44,8 @@ export default (
     };
 
     const drawEnd = () => {
+        // 置空恢复暂存
+        storeElements.value = [];
         targetElement = null;
     };
 

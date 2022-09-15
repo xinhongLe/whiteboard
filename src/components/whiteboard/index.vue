@@ -99,6 +99,7 @@ const canvasHeighth = ref(0 * canvasScale);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 const eraserIcon = require("./assets/images/circle.svg");
+const storeElements = ref<IElement[]>([]);
 
 // 禁用触摸屏下双指触发右键菜单 影响缩放
 document.oncontextmenu = () => {
@@ -153,6 +154,7 @@ const { handleDown } = useHandlePointer(
     canvas,
     context,
     elements,
+    storeElements,
     canvasConfig,
     disabled
 );
@@ -162,6 +164,7 @@ const { drawStart, drawing, drawEnd } = useDrawElement(
     canvas,
     context,
     elements,
+    storeElements,
     canvasConfig
 );
 
@@ -255,6 +258,28 @@ const reset = () => {
     canvasConfig.scrollY = 0;
 };
 
+// 撤销
+const undo = () => {
+    if (elements.value.length === 0) return;
+    const element = elements.value.pop();
+    storeElements.value.push(element);
+    render();
+};
+
+// 能否撤销
+const canUndo = computed(() => elements.value.length > 0);
+
+// 恢复
+const redo = () => {
+    if (storeElements.value.length === 0) return;
+    const element = storeElements.value.pop();
+    elements.value.push(element);
+    render();
+};
+
+// 能否恢复
+const canRedo = computed(() => storeElements.value.length > 0);
+
 // 清空元素
 const clear = () => {
     elements.value = [];
@@ -271,7 +296,11 @@ defineExpose({
     getElements,
     setElements,
     reset,
-    clear
+    clear,
+    undo,
+    redo,
+    canUndo,
+    canRedo
 });
 </script>
 

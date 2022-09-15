@@ -86,7 +86,10 @@ export enum OPTION_TYPE {
 | setElements | 设置绘制元素集合 | (elements: IElement[]) => void |
 | reset | 复位 | () => void |
 | clear | 清空元素 | () => void |
-
+| undo | 撤销 | () => void |
+| redo | 恢复 | () => void |
+| canUndo | 是否允许撤销 | boolean |
+| canRedo | 是否允许恢复 | boolean |
 
 ------------------------------------------
 ***【注】使用黑板时不要存在滚动轴。***
