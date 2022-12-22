@@ -26,7 +26,7 @@ export default (
         elements,
         canvasConfig
     );
-    const { updateElement } = useUpdateElement();
+    const { updateElement } = useUpdateElement(elements);
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
     const { updateScroll } = useZoom(canvas, canvasConfig);
     let targetElement: IElement | null = null;
@@ -48,6 +48,7 @@ export default (
 
     const handleDown = (event: PointerEvent | TouchEvent) => {
         if (disabled.value) return;
+        if ((event.target as HTMLElement).tagName !== "CANVAS") return;
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.MOUSE: {
                 if (event instanceof TouchEvent && event.touches.length === 2) {

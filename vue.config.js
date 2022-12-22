@@ -9,7 +9,7 @@ module.exports = defineConfig({
             .test(/\.(png|jpe?g|gif|webp|svg)(\?.*)?$/)
             .set("parser", {
                 dataUrlCondition: {
-                    maxSize: 1000 * 1024 // 10KiB
+                    maxSize: 1000 * 1024 // 1000KiB
                 }
             })
         if (process.env.NODE_ENV === "production") {
