@@ -23,6 +23,7 @@
 
         <Ruler
             :canvasConfig="canvasConfig"
+            :elements="elements"
             @close="setOptionType(OPTION_TYPE.PEN)"
             @draw-start="drawStart"
             @drawing="drawing"

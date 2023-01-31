@@ -51,7 +51,8 @@ import {
     onUnmounted,
     inject
 } from "vue";
-import { ICanvasConfig, ICenter } from "../../types";
+import { OPTION_TYPE } from "../../config";
+import { ICanvasConfig, ICenter, IElement } from "../../types";
 import { getAngle, getCanvasPointPosition, throttleRAF } from "../../utils";
 
 const canTouch = inject("canTouch");
@@ -60,6 +61,10 @@ const disabled = inject("disabled");
 const props = defineProps({
     canvasConfig: {
         type: Object as PropType<ICanvasConfig>,
+        required: true
+    },
+    elements: {
+        type: Array as PropType<IElement[]>,
         required: true
     }
 });
@@ -83,6 +88,7 @@ let drawLine = [
     [0, 0]
 ];
 let rulerCenter = { x: 0, y: 0 };
+let isAdsorption = false;
 
 const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
     const l = Math.hypot(center.x - mousePoint.x, center.y - mousePoint.y);
@@ -138,7 +144,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         viewText.value = "";
     }
 
-    if (event.target && (event.target as Element).className === "ruler-scale") {
+    if (event.target && ((event.target as Element).className === "ruler-scale" || (event.target as Element).className === "ruler-number")) {
         // draw
         mode.value = "draw";
         viewText.value = "length";
@@ -169,11 +175,12 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     } else {
         document.addEventListener("pointermove", handleMouseMove, { passive: true });
         document.addEventListener("pointerup", handleEnd, { passive: true });
-    }};
+    }
+};
 
 const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
-    if (disabled) return;
+    if (disabled || isAdsorption) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
     const mouseX =
         event instanceof TouchEvent
@@ -187,6 +194,21 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     if (mode.value === "move") {
         x.value += mouseX - startPoint.x;
         y.value += mouseY - startPoint.y;
+        
+        // 判断吸附
+        // 往上移动，才做判断
+        if (mouseY - startPoint.y < 0 && !isAdsorption) {
+            const targetRulerElements = props.elements.filter(element => element.angle === angle.value && element.type === OPTION_TYPE.RULER);
+            const targetElement = targetRulerElements.find(element => y.value - element.y < 10 && y.value - element.y > 0);
+            if (targetElement) {
+                y.value = targetElement.y;
+                isAdsorption = true;
+                setTimeout(() => {
+                    // 完成吸附后 1s内禁止其他操作
+                    isAdsorption = false;
+                }, 1000);
+            }
+        }
     }
 
     if (mode.value === "rotate") {

@@ -1,6 +1,6 @@
 import { Ref } from "vue";
 import { OPTION_TYPE } from "../config";
-import { ICanvasConfig, ICompassData, IElement, IRulerData } from "../types";
+import { ICanvasConfig, ICompassData, IElement, IRulerData, IRulerElement } from "../types";
 import useCreateElement from "./useCreateElement";
 import useRenderElement from "./useRenderElement";
 import useUpdateElement from "./useUpdateElement";
@@ -44,6 +44,13 @@ export default (
     };
 
     const drawEnd = () => {
+        if (targetElement && targetElement.type === OPTION_TYPE.RULER) {
+            if ((targetElement as IRulerElement).points[0][0] === (targetElement as IRulerElement).points[1][0]) {
+                // 直线只是一个点，移除该元素
+                const index = elements.value.findIndex(element => element.id === targetElement!.id);
+                elements.value.splice(index, 1);
+            }
+        }
         // 置空恢复暂存
         storeElements.value = [];
         targetElement = null;
