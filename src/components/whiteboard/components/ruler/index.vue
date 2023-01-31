@@ -9,7 +9,13 @@
                 transform: `rotate(${angle}deg)`
             }"
         >
-            <div class="ruler-scale"></div>
+            <div class="ruler-scale-box">
+                <div class="ruler-scale">
+                    <div class="ruler-number" v-for="num in numberList" :key="num">
+                        <span>{{ num + 1 }}</span>
+                    </div>
+                </div>
+            </div>
             <div class="ruler-buttons">
                 <div class="ruler-button ruler-close" @click="closeRuler()">
                     <img src="./images/close.svg" alt="" />
@@ -195,6 +201,7 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     if (mode.value === "resize") {
         width.value += mouseX - startPoint.x;
         if (width.value < 500) width.value = 500;
+        updateNumberList();
     }
 
     startPoint.x = mouseX;
@@ -228,6 +235,12 @@ const closeRuler = () => {
     emit("close");
 };
 
+const numberList = ref<number[]>([]);
+const updateNumberList = () => {
+    const length = Math.floor((width.value - 20) / 40);
+    numberList.value = Array.from({ length }, (v, k) => k);
+};
+
 onMounted(() => {
     if (ruler.value) {
         x.value = ruler.value.clientWidth / 2 - 250;
@@ -236,6 +249,8 @@ onMounted(() => {
 
     document.addEventListener("touchstart", handleMouseDown, { passive: true });
     document.addEventListener("pointerdown", handleMouseDown, { passive: true });
+
+    updateNumberList();
 });
 
 onUnmounted(() => {
@@ -256,14 +271,45 @@ onUnmounted(() => {
 .ruler-box {
     position: absolute;
     transform-origin: top left;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.ruler-scale-box {
+    height: 20px;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 0 10px;
 }
 
 .ruler-scale {
+    position: relative;
+    display: flex;
     height: 20px;
     background-image: url(./images/scale.png);
     background-repeat: repeat-x;
-    background-size: 600px 24px;
-    background-color: rgba(0, 0, 0, 0.05);
+    background-size: 600px 25px;
+}
+
+.ruler-number {
+    font-size: 12px;
+    width: 40px;
+    min-width: 40px;
+    position: relative;
+    span {
+        display: block;
+        position: absolute;
+        top: 20px;
+        right: 0;
+        transform: translateX(50%);
+    }
+    &:first-child::before {
+        content: "0";
+        display: block;
+        position: absolute;
+        top: 20px;
+        left: 0;
+        transform: translateX(-50%);
+    }
 }
 
 .ruler-buttons {

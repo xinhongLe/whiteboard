@@ -12,7 +12,7 @@ export default (
     storeElements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig
 ) => {
-    const { updateElement } = useUpdateElement();
+    const { updateElement } = useUpdateElement(elements);
     const { renderElements } = useRenderElement(canvas, context, canvasConfig);
     const { createCompassElement, createRulerElement } = useCreateElement(elements, canvasConfig);
     let targetElement: IElement | null = null;
