@@ -20,6 +20,7 @@
             ref="whiteboard"
             @scrollChange="scrollChange"
             @zoomChange="zoomChange"
+            @closeTool="closeTool"
         />
     </div>
 </template>
@@ -103,6 +104,10 @@ export default defineComponent({
         const canUndo = computed(() => whiteboard.value && whiteboard.value.canUndo);
         const canRedo = computed(() => whiteboard.value && whiteboard.value.canRedo);
 
+        const closeTool = () => {
+            console.log("关闭tool");
+        };
+
         return {
             whiteboard,
             whiteboardBox,
@@ -122,7 +127,8 @@ export default defineComponent({
             undo,
             redo,
             canUndo,
-            canRedo
+            canRedo,
+            closeTool
         };
     }
 });

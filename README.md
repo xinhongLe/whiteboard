@@ -72,6 +72,7 @@ export enum OPTION_TYPE {
 | ----------- | ----------- | ----------- |
 | scrollChange | 当发生滚动是触发回调 | (scroll: { scrollX: number, scrollY: number }) |
 | zoomChange | 当发生缩放是触发回调 | (zoom: number) |
+| closeTool | 当工具关闭是触发 | - |
 
 ## 黑板开放的方法
 | 方法 | 描述 | 类型 |

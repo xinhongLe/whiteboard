@@ -14,7 +14,7 @@
 
         <Compass
             :canvasConfig="canvasConfig"
-            @close="setOptionType(OPTION_TYPE.PEN)"
+            @close="closeTool"
             @draw-start="drawStart"
             @drawing="drawing"
             @draw-end="drawEnd"
@@ -24,7 +24,7 @@
         <Ruler
             :canvasConfig="canvasConfig"
             :elements="elements"
-            @close="setOptionType(OPTION_TYPE.PEN)"
+            @close="closeTool"
             @draw-start="drawStart"
             @drawing="drawing"
             @draw-end="drawEnd"
@@ -33,7 +33,7 @@
 
         <Protractor
             :canvasConfig="canvasConfig"
-            @close="setOptionType(OPTION_TYPE.PEN)"
+            @close="closeTool"
             v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR"
         />
     </div>
@@ -65,7 +65,7 @@ import Compass from "./components/compass/index.vue";
 import Ruler from "./components/ruler/index.vue";
 import Protractor from "./components/protractor/index.vue";
 
-const emit = defineEmits(["scrollChange", "zoomChange"]);
+const emit = defineEmits(["scrollChange", "zoomChange", "closeTool"]);
 
 const props = defineProps({
     options: {
@@ -263,7 +263,7 @@ const reset = () => {
 const undo = () => {
     if (elements.value.length === 0) return;
     const element = elements.value.pop();
-    storeElements.value.push(element);
+    storeElements.value.push(element!);
     render();
 };
 
@@ -274,7 +274,7 @@ const canUndo = computed(() => elements.value.length > 0);
 const redo = () => {
     if (storeElements.value.length === 0) return;
     const element = storeElements.value.pop();
-    elements.value.push(element);
+    elements.value.push(element!);
     render();
 };
 
@@ -285,6 +285,12 @@ const canRedo = computed(() => storeElements.value.length > 0);
 const clear = () => {
     elements.value = [];
     render();
+};
+
+// 关闭工具
+const closeTool = () => {
+    setOptionType(OPTION_TYPE.PEN);
+    emit("closeTool");
 };
 
 defineExpose({
