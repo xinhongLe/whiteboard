@@ -11,6 +11,7 @@
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
     <button @click="reset()">复位</button>
+    <button @click="clear()">清空</button>
     <button @click="undo()" :disabled="!canUndo">撤销</button>
     <button @click="redo()" :disabled="!canRedo">恢复</button>
     &nbsp;<span>滚动 ({{(-scrollX).toFixed(0)}}/{{(-scrollY).toFixed(0)}})</span> <span>缩放 {{(zoom * 100).toFixed(0)}}%</span>
@@ -106,6 +107,10 @@ export default defineComponent({
             whiteboard.value.redo();
         };
 
+        const clear = () => {
+            whiteboard.value.clear();
+        };
+
         const canUndo = computed(() => whiteboard.value && whiteboard.value.canUndo);
         const canRedo = computed(() => whiteboard.value && whiteboard.value.canRedo);
 
@@ -133,7 +138,8 @@ export default defineComponent({
             redo,
             canUndo,
             canRedo,
-            closeTool
+            closeTool,
+            clear
         };
     }
 });
