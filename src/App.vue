@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { computed, defineComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 import WhiteBoard, { OPTION_TYPE } from "./components/whiteboard";
 
 export default defineComponent({
@@ -51,13 +51,18 @@ export default defineComponent({
                 offsetX: x,
                 offsetY: y
             };
+
+            console.log("计算偏移值", x, y);
         };
         onMounted(() => {
-            resize();
+            nextTick(resize);
 
             window.addEventListener("resize", resize);
 
             whiteboard.value.setOptionType(OPTION_TYPE.PEN);
+
+            // 处理外部使用dom慢引起的笔记计算误差，延迟后再执行一下，降低误差概率
+            setTimeout(resize, 2000);
         });
         onUnmounted(() => {
             window.removeEventListener("resize", resize);
