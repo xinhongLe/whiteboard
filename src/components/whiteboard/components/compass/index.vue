@@ -182,6 +182,14 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         startPoint = [mouseX, mouseY];
         canvasCircleCenter = getCanvasPointPosition(center, canvasConfig.value);
         emit("drawStart", {
+            r: 1,
+            startAngle: 0,
+            drawAngle: 360,
+            type: 'DOT',
+            x: canvasCircleCenter.x,
+            y: canvasCircleCenter.y
+        });
+        emit("drawStart", {
             r: 0,
             startAngle,
             drawAngle,
@@ -297,16 +305,6 @@ const close = () => {
 const handleEnd = (event: PointerEvent | TouchEvent) => {
     emit("drawEnd");
 
-    if (mode === 'draw') {
-        emit("drawStart", {
-            r: 1,
-            startAngle: 0,
-            drawAngle: 360,
-            type: 'DOT',
-            x: canvasCircleCenter.x,
-            y: canvasCircleCenter.y
-        });
-    }
     mode = "";
     if (event instanceof TouchEvent) {
         document.removeEventListener("touchmove", handleMouseMove);

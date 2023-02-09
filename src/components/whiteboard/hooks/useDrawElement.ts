@@ -17,14 +17,6 @@ export default (
     const {createCompassElement, createRulerElement} = useCreateElement(elements, canvasConfig);
     let targetElement: IElement | null = null;
     const drawStart = (data: ICompassData | IRulerData) => {
-        // 判断是否绘制圆，没有绘制，则不显示圆心
-        const type = (data as ICompassData).type
-        if (type === 'DOT') {
-            const circleLen = elements.value.filter(item => item.r && item.type === "COMPASS").length
-            const dotLen = elements.value.filter(item => item.type === "DOT").length
-
-            if (circleLen !== dotLen + 1) return
-        }
         switch (canvasConfig.optionType) {
             case OPTION_TYPE.COMPASS: {
                 targetElement = createCompassElement(data as ICompassData);
@@ -62,6 +54,7 @@ export default (
         // 置空恢复暂存
         storeElements.value = [];
         targetElement = null;
+        console.log(elements.value)
     };
 
     return {
