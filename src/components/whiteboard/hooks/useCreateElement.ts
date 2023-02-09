@@ -1,7 +1,7 @@
-import { Ref } from "vue";
-import { OPTION_TYPE } from "../config";
-import { ICanvasConfig, ICenter, ICompassData, IElement, IRulerData } from "../types";
-import { createRandomCode } from "../utils";
+import {Ref} from "vue";
+import {OPTION_TYPE} from "../config";
+import {ICanvasConfig, ICenter, ICompassData, IElement, IRulerData} from "../types";
+import {createRandomCode} from "../utils";
 
 export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     const createElement = (element: IElement) => {
@@ -9,7 +9,7 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
         return element;
     };
 
-    const createPenElement = ({ x, y }: ICenter) => {
+    const createPenElement = ({x, y}: ICenter) => {
         return createElement({
             id: createRandomCode(),
             type: OPTION_TYPE.PEN,
@@ -29,7 +29,7 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     const createCompassElement = (data: ICompassData) => {
         return createElement({
             id: createRandomCode(),
-            type: OPTION_TYPE.COMPASS,
+            type: data.type ? data.type : OPTION_TYPE.COMPASS,
             width: 0,
             height: 0,
             ...data,
@@ -56,7 +56,7 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
         });
     };
 
-    const createEraserElement = ({ x, y }: ICenter) => {
+    const createEraserElement = ({x, y}: ICenter) => {
         return createElement({
             id: createRandomCode(),
             type: OPTION_TYPE.ERASER,

@@ -1,5 +1,5 @@
-import { Ref } from "vue";
-import { OPTION_TYPE } from "../config";
+import {Ref} from "vue";
+import {OPTION_TYPE} from "../config";
 import {
     ICanvasConfig,
     ICompassElement,
@@ -79,6 +79,9 @@ export default (
         context.value.rotate(element.angle);
 
         // 绘制笔记
+        if (element.type === 'DOT'){
+            context.value.fillStyle = element.strokeColor
+        }
         context.value.strokeStyle = element.strokeColor;
         context.value.lineWidth = element.lineWidth / 1.5;
         context.value.beginPath();
@@ -90,6 +93,10 @@ export default (
             (element.drawAngle * Math.PI) / 180,
             element.drawAngle - element.startAngle < 0
         );
+
+        if (element.type === 'DOT'){
+            context.value.fill()
+        }
 
         context.value.stroke();
 
@@ -186,7 +193,7 @@ export default (
             normalizedCanvasWidth,
             normalizedCanvasHeight
         );
-        
+
         // 绘制canvas
         visibleElements.forEach((element) => {
             if (!element.isDelete) {
@@ -195,6 +202,7 @@ export default (
                         renderPenElement(element as IPenElement);
                         break;
                     case OPTION_TYPE.COMPASS:
+                    case 'DOT':
                         renderCompassElement(element as ICompassElement);
                         break;
                     case OPTION_TYPE.RULER:

@@ -17,12 +17,13 @@
  */
 interface IBaseElement {
     id: string;
-    type: "PEN" | "COMPASS" | "RULER" | "ERASER";
+    type: "PEN" | "COMPASS" | "RULER" | "ERASER" | "DOT" | "AUXILIARY";
     angle: number;
     isDelete: boolean;
     locked: boolean;
     width: number;
     height: number;
+
     [key: string]: unknown;
 }
 
@@ -97,6 +98,7 @@ export interface ICompassData {
     drawAngle: number;
     x: number;
     y: number;
+    type?: "DOT" | "AUXILIARY"
 }
 
 export interface IRulerData {

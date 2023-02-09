@@ -178,9 +178,7 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     }
 
     if (mode === "resize") {
-        debugger
         let reduce = startPoint.y - mouseY;
-        console.log(reduce)
         if (r.value + reduce < 200) {
             reduce = 200 - r.value;
             r.value = 200;

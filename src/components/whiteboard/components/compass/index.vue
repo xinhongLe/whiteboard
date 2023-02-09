@@ -42,7 +42,7 @@
             >
                 <div class="compass-close">
                     <div class="close-bg" @click="close()">
-                        <img src="./images/head.svg" />
+                        <img src="./images/head.svg"/>
                     </div>
                 </div>
                 <div class="compass-drag-head">
@@ -74,8 +74,8 @@ import {
     nextTick,
     inject
 } from "vue";
-import { ICanvasConfig } from "../../types";
-import { getAngle, getCanvasPointPosition, throttleRAF } from "../../utils";
+import {ICanvasConfig} from "../../types";
+import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -85,10 +85,10 @@ let drawAngle = 0;
 let recordAngle = 0;
 let startPoint = [0, 0];
 let mode = "";
-let center = { x: 0, y: 0 };
-let drawPoint = { x: 0, y: 0 };
+let center = {x: 0, y: 0};
+let drawPoint = {x: 0, y: 0};
 // 圆心实际在canvas中的位置坐标
-let canvasCircleCenter = { x: 0, y: 0 };
+let canvasCircleCenter = {x: 0, y: 0};
 
 const x = ref(531);
 const y = ref(108);
@@ -99,7 +99,7 @@ const compassCenter = ref();
 const penArea = ref();
 const scale = ref(0.8);
 
-const emit = defineEmits(["close", "drawStart", "drawing", "drawEnd"]);
+const emit = defineEmits(["close", "drawStart", "drawing", "drawEnd", "drawDot"]);
 
 const props = defineProps({
     canvasConfig: {
@@ -109,19 +109,6 @@ const props = defineProps({
 });
 
 const canvasConfig = computed(() => props.canvasConfig);
-
-onMounted(() => {
-    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
-    document.addEventListener("touchstart", handleMouseDown, { passive: true });
-    nextTick(() => {
-        x.value = compass.value.clientWidth / 2 - 109;
-    });
-});
-
-onUnmounted(() => {
-    document.removeEventListener("touchstart", handleMouseDown);
-    document.removeEventListener("pointerdown", handleMouseDown);
-});
 
 const getDrawAngle = (x: number, y: number) => {
     const angle = Math.round(
@@ -141,20 +128,21 @@ const getDrawAngle = (x: number, y: number) => {
 };
 
 const getDrawPointer = () => {
-    const { x, y } = penArea.value.getBoundingClientRect();
-    return { x, y };
+    const {x, y} = penArea.value.getBoundingClientRect();
+    return {x, y};
 };
 
 const getCompassCenter = () => {
-    const { x, y } = compassCenter.value.getBoundingClientRect();
+    const {x, y} = compassCenter.value.getBoundingClientRect();
     // return getWhiteBoardPointPosition({ x: x as number, y: y as number }, canvasConfig.value);
-    return { x, y };
+    return {x, y};
 };
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
     if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
+
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
@@ -165,34 +153,24 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
             : event.clientY;
     center = getCompassCenter();
     drawPoint = getDrawPointer();
-    if (
-        event.target &&
-        (event.target as Element).className === "compass-scale"
-    ) {
+
+    const className = event.target ? (event.target as Element).className : ''
+    if (className === "compass-scale") {
         mode = "setScale";
         startPoint = [mouseX, mouseY];
     }
 
-    if (
-        event.target &&
-        (event.target as Element).className === "right-leg-zoom"
-    ) {
+    if (className === "right-leg-zoom") {
         mode = "setAngle";
         startPoint = [mouseX, mouseY];
     }
 
-    if (
-        event.target &&
-        (event.target as Element).className === "compass-drag-img"
-    ) {
+    if (className === "compass-drag-img") {
         mode = "move";
         startPoint = [mouseX, mouseY];
     }
 
-    if (
-        event.target &&
-        (event.target as Element).className === "right-leg-pen"
-    ) {
+    if (className === "right-leg-pen") {
         mode = "draw";
         startAngle = getDrawAngle(
             drawPoint.x - center.x,
@@ -213,11 +191,11 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     }
 
     if (event instanceof TouchEvent) {
-        document.addEventListener("touchmove", handleMouseMove, { passive: true });
-        document.addEventListener("touchend", handleEnd, { passive: true });
+        document.addEventListener("touchmove", handleMouseMove, {passive: true});
+        document.addEventListener("touchend", handleEnd, {passive: true});
     } else {
-        document.addEventListener("pointermove", handleMouseMove, { passive: true });
-        document.addEventListener("pointerup", handleEnd, { passive: true });
+        document.addEventListener("pointermove", handleMouseMove, {passive: true});
+        document.addEventListener("pointerup", handleEnd, {passive: true});
     }
 };
 
@@ -316,8 +294,19 @@ const close = () => {
     emit("close");
 };
 
-const handleEnd = (event) => {
+const handleEnd = (event: PointerEvent | TouchEvent) => {
     emit("drawEnd");
+
+    if (mode === 'draw') {
+        emit("drawStart", {
+            r: 1,
+            startAngle: 0,
+            drawAngle: 360,
+            type: 'DOT',
+            x: canvasCircleCenter.x,
+            y: canvasCircleCenter.y
+        });
+    }
     mode = "";
     if (event instanceof TouchEvent) {
         document.removeEventListener("touchmove", handleMouseMove);
@@ -327,6 +316,24 @@ const handleEnd = (event) => {
         document.removeEventListener("pointerup", handleEnd);
     }
 };
+
+onMounted(() => {
+    document.addEventListener("pointerdown", handleMouseDown, {passive: true});
+    document.addEventListener("touchstart", handleMouseDown, {passive: true});
+    nextTick(() => {
+        x.value = compass.value.clientWidth / 2 - 109;
+
+        setTimeout(() => {
+            center = getCompassCenter();
+            canvasCircleCenter = getCanvasPointPosition(center, canvasConfig.value);
+        }, 500)
+    });
+});
+
+onUnmounted(() => {
+    document.removeEventListener("touchstart", handleMouseDown);
+    document.removeEventListener("pointerdown", handleMouseDown);
+});
 </script>
 
 <style lang="scss" scoped>

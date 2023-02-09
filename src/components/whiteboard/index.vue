@@ -81,7 +81,7 @@ const props = defineProps({
     }
 });
 
-const { options, disabled } = toRefs(props);
+const {options, disabled} = toRefs(props);
 
 watch(
     () => props.options,
