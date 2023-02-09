@@ -6,7 +6,7 @@
                 width: `${width}px`,
                 left: `${x}px`,
                 top: `${y}px`,
-                transform: `rotate(${angle}deg)`
+                transform: `rotate(${angle}deg) scale(${multiple})`
             }"
         >
             <div class="ruler-scale-box">
@@ -18,22 +18,25 @@
             </div>
             <div class="ruler-buttons">
                 <div class="ruler-button ruler-close" @click="closeRuler()">
-                    <img src="./images/close.svg" alt="" />
+                    <img src="./images/close.svg" alt=""/>
                 </div>
                 <div class="ruler-angle-text">
                     {{
                         viewText === "angle"
                             ? angle + "°"
                             : viewText === "length"
-                            ? Math.abs(length) + "cm"
-                            : ""
+                                ? Math.abs(length) + "cm"
+                                : ""
                     }}
                 </div>
+                <div class="ruler-button ruler-magnify">
+                    <img src="./images/resize.svg" alt=""/>
+                </div>
                 <div class="ruler-button ruler-rotate">
-                    <img src="./images/rotate.svg" alt="" />
+                    <img src="./images/rotate.svg" alt=""/>
                 </div>
                 <div class="ruler-button ruler-resize">
-                    <img src="./images/resize.svg" alt="" />
+                    <img src="./images/resize.svg" alt=""/>
                 </div>
             </div>
         </div>
@@ -51,9 +54,9 @@ import {
     onUnmounted,
     inject
 } from "vue";
-import { OPTION_TYPE } from "../../config";
-import { ICanvasConfig, ICenter, IElement } from "../../types";
-import { getAngle, getCanvasPointPosition, throttleRAF } from "../../utils";
+import {OPTION_TYPE} from "../../config";
+import {ICanvasConfig, ICenter, IElement} from "../../types";
+import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -77,17 +80,18 @@ const width = ref(500);
 const x = ref(0);
 const y = ref(0);
 const angle = ref(0);
+const multiple = ref(1);
 const ruler = ref();
 const mode = ref("");
 const viewText = ref("");
-const startPoint = { x: 0, y: 0 };
+const startPoint = {x: 0, y: 0};
 const length = ref(0);
 let startAngle = 0;
 let drawLine = [
     [0, 0],
     [0, 0]
 ];
-let rulerCenter = { x: 0, y: 0 };
+let rulerCenter = {x: 0, y: 0};
 let isAdsorption = false;
 
 const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
@@ -102,30 +106,24 @@ const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
     if (disabled) return;
-    if (event instanceof TouchEvent && event.touches.length > 1) return;
-    const mouseX =
-        event instanceof TouchEvent
-            ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
-            : event.clientX;
-    const mouseY =
-        event instanceof TouchEvent
-            ? event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY
-            : event.clientY;
+
+    const touchFlag = event instanceof TouchEvent
+    if (touchFlag && event.touches.length > 1) return;
+
+    const mouseX = touchFlag ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX : event.clientX;
+    const mouseY = touchFlag ? event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY : event.clientY;
+
     startPoint.x = mouseX;
     startPoint.y = mouseY;
-    if (
-        event.target &&
-        (event.target as Element).className === "ruler-buttons"
-    ) {
+
+    const className = event.target ? (event.target as Element).className : "";
+    if (className === "ruler-buttons") {
         // move
         mode.value = "move";
         viewText.value = "";
     }
 
-    if (
-        event.target &&
-        (event.target as Element).className === "ruler-button ruler-rotate"
-    ) {
+    if (className === "ruler-button ruler-rotate") {
         // rotate
         mode.value = "rotate";
         viewText.value = "angle";
@@ -135,16 +133,19 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         );
     }
 
-    if (
-        event.target &&
-        (event.target as Element).className === "ruler-button ruler-resize"
-    ) {
+    if (className === "ruler-button ruler-resize") {
         // resize
         mode.value = "resize";
         viewText.value = "";
     }
 
-    if (event.target && ((event.target as Element).className === "ruler-scale" || (event.target as Element).className === "ruler-number")) {
+    if (className === "ruler-button ruler-magnify") {
+        // resize
+        mode.value = "magnify";
+        viewText.value = "";
+    }
+
+    if (className === "ruler-scale" || className === "ruler-number") {
         // draw
         mode.value = "draw";
         viewText.value = "length";
@@ -170,11 +171,11 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     }
 
     if (event instanceof TouchEvent) {
-        document.addEventListener("touchmove", handleMouseMove, { passive: true });
-        document.addEventListener("touchend", handleEnd, { passive: true });
+        document.addEventListener("touchmove", handleMouseMove, {passive: true});
+        document.addEventListener("touchend", handleEnd, {passive: true});
     } else {
-        document.addEventListener("pointermove", handleMouseMove, { passive: true });
-        document.addEventListener("pointerup", handleEnd, { passive: true });
+        document.addEventListener("pointermove", handleMouseMove, {passive: true});
+        document.addEventListener("pointerup", handleEnd, {passive: true});
     }
 };
 
@@ -194,7 +195,7 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     if (mode.value === "move") {
         x.value += mouseX - startPoint.x;
         y.value += mouseY - startPoint.y;
-        
+
         // 判断吸附
         // 往上移动，才做判断
         if (mouseY - startPoint.y < 0 && !isAdsorption) {
@@ -204,9 +205,9 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
                 y.value = targetElement.y;
                 isAdsorption = true;
                 setTimeout(() => {
-                    // 完成吸附后 1s内禁止其他操作
+                    // 完成吸附后 300ms内禁止其他操作
                     isAdsorption = false;
-                }, 1000);
+                }, 300);
             }
         }
     }
@@ -226,6 +227,18 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
         updateNumberList();
     }
 
+    if (mode.value === "magnify") {
+        const reduce = startPoint.y - mouseY;
+
+        if (reduce > 0) {
+            multiple.value += 0.05
+        }else {
+            if (multiple.value === 1) return;
+            multiple.value -= 0.05
+        }
+
+    }
+
     startPoint.x = mouseX;
     startPoint.y = mouseY;
 
@@ -241,7 +254,7 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     }
 });
 
-const handleEnd = (event) => {
+const handleEnd = (event: PointerEvent | TouchEvent) => {
     mode.value = "";
     emit("drawEnd");
     if (event instanceof TouchEvent) {
@@ -260,7 +273,7 @@ const closeRuler = () => {
 const numberList = ref<number[]>([]);
 const updateNumberList = () => {
     const length = Math.floor((width.value - 20) / 40);
-    numberList.value = Array.from({ length }, (v, k) => k);
+    numberList.value = Array.from({length}, (v, k) => k);
 };
 
 onMounted(() => {
@@ -269,8 +282,8 @@ onMounted(() => {
         y.value = ruler.value.clientHeight / 2 - 30;
     }
 
-    document.addEventListener("touchstart", handleMouseDown, { passive: true });
-    document.addEventListener("pointerdown", handleMouseDown, { passive: true });
+    document.addEventListener("touchstart", handleMouseDown, {passive: true});
+    document.addEventListener("pointerdown", handleMouseDown, {passive: true});
 
     updateNumberList();
 });
@@ -317,6 +330,7 @@ onUnmounted(() => {
     width: 40px;
     min-width: 40px;
     position: relative;
+
     span {
         display: block;
         position: absolute;
@@ -324,6 +338,7 @@ onUnmounted(() => {
         right: 0;
         transform: translateX(50%);
     }
+
     &:first-child::before {
         content: "0";
         display: block;
@@ -350,9 +365,11 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+
     &:hover {
         background-color: rgba(0, 0, 0, 0.05);
     }
+
     img {
         display: block;
         width: 32px;
@@ -366,9 +383,22 @@ onUnmounted(() => {
         cursor: pointer;
     }
 
+    &.ruler-restore {
+        margin-right: 20px;
+        cursor: pointer;
+    }
+
+    &.ruler-magnify {
+        margin-right: 20px;
+        cursor: default;
+        transform: rotate(90deg);
+
+    }
+
     &.ruler-resize {
         margin-right: 20px;
         cursor: default;
+
     }
 
     &.ruler-rotate {
