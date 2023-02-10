@@ -59,6 +59,30 @@
                 </div>
             </div>
         </div>
+        <div
+            v-if="auxiliaryW"
+            class="compass-auxiliary"
+            :style="{
+                width:`${auxiliaryW}px`,
+                top:`${centerDot.y}px`,
+                left:`${centerDot.x}px`,
+                transform:`rotate(${auxiliaryDeg}deg)`,
+                borderColor:`${canvasConfig.strokeColor}`
+            }"
+        >
+        </div>
+        <div
+            v-if="auxiliaryW"
+            class="compass-tip"
+            :style="{
+                top:`${tipPosition.y}px`,
+                left:`${tipPosition.x}px`,
+                 color:`${canvasConfig.strokeColor}`,
+                transform:`rotate(${auxiliaryDeg}deg)`,
+            }"
+        >
+            {{ auxiliaryW }}
+        </div>
     </div>
 </template>
 
@@ -72,7 +96,7 @@ import {
     computed,
     onUnmounted,
     nextTick,
-    inject
+    inject, reactive
 } from "vue";
 import {ICanvasConfig} from "../../types";
 import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
@@ -143,6 +167,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
 
+    auxiliaryW.value = 0
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
@@ -211,6 +236,7 @@ const handleMouseMove = throttleRAF((event: MouseEvent | TouchEvent) => {
     event.stopPropagation();
     if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
+
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
@@ -304,6 +330,7 @@ const close = () => {
 
 const handleEnd = (event: PointerEvent | TouchEvent) => {
     emit("drawEnd");
+    getRadius()
 
     mode = "";
     if (event instanceof TouchEvent) {
@@ -315,6 +342,43 @@ const handleEnd = (event: PointerEvent | TouchEvent) => {
     }
 };
 
+const auxiliaryW = ref(0)
+const auxiliaryDeg = ref(0)
+const centerDot = reactive({x: 0, y: 0})
+const tipPosition = reactive({x: 0, y: 0})
+
+
+function getRadius() {
+    const {x: cx, y: cy} = getCanvasPointPosition(getCompassCenter(), canvasConfig.value);
+    const {x: dx, y: dy} = getCanvasPointPosition(getDrawPointer(), canvasConfig.value);
+    centerDot.x = cx
+    centerDot.y = cy
+    const sideLen1 = Math.abs(cx - dx)
+    const sideLen2 = Math.abs(cy - dy)
+
+    tipPosition.x = cx + sideLen1 / 2
+    tipPosition.y = cy + sideLen2 / 2
+
+    let angle = Math.atan(sideLen2 / sideLen1) * 180 / Math.PI
+    if (dx > cx && dy < cy) {
+        angle = -angle
+        tipPosition.x = cx + sideLen1 / 2
+        tipPosition.y = cy - sideLen2 / 2
+    }
+    if (dx < cx && dy > cy) {
+        angle = 90 + (90 - angle)
+        tipPosition.x = cx - sideLen1 / 2
+        tipPosition.y = cy + sideLen2 / 2
+    }
+    if (dx < cx && dy < cy) {
+        angle = 180 + angle
+        tipPosition.x = cx - sideLen1 / 2
+        tipPosition.y = cy - sideLen2 / 2
+    }
+    auxiliaryW.value = Math.round(Math.sqrt(Math.pow(sideLen1, 2) + Math.pow(sideLen2, 2)))
+    auxiliaryDeg.value = angle
+}
+
 onMounted(() => {
     document.addEventListener("pointerdown", handleMouseDown, {passive: true});
     document.addEventListener("touchstart", handleMouseDown, {passive: true});
@@ -322,8 +386,7 @@ onMounted(() => {
         x.value = compass.value.clientWidth / 2 - 109;
 
         setTimeout(() => {
-            center = getCompassCenter();
-            canvasCircleCenter = getCanvasPointPosition(center, canvasConfig.value);
+            getRadius()
         }, 500)
     });
 });
@@ -496,5 +559,20 @@ onUnmounted(() => {
     display: block;
     -webkit-user-drag: none;
     pointer-events: none;
+}
+
+.compass-auxiliary {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 1px #666666 dashed;
+    transform-origin: 0;
+}
+
+.compass-tip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 12px;
 }
 </style>

@@ -54,7 +54,6 @@ export default (
         // 置空恢复暂存
         storeElements.value = [];
         targetElement = null;
-        console.log(elements.value)
     };
 
     return {
