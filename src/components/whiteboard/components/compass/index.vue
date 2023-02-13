@@ -81,7 +81,7 @@
                 transform:`rotate(${auxiliaryDeg}deg)`,
             }"
         >
-            {{ auxiliaryW }}
+            r={{ auxiliaryCm }}cm
         </div>
     </div>
 </template>
@@ -379,6 +379,8 @@ function getRadius() {
     auxiliaryDeg.value = angle
 }
 
+const auxiliaryCm = computed(() => Math.round(auxiliaryW.value / 4) / 10)
+
 onMounted(() => {
     document.addEventListener("pointerdown", handleMouseDown, {passive: true});
     document.addEventListener("touchstart", handleMouseDown, {passive: true});
@@ -387,7 +389,7 @@ onMounted(() => {
 
         setTimeout(() => {
             getRadius()
-        }, 500)
+        }, 300)
     });
 });
 
@@ -526,7 +528,7 @@ onUnmounted(() => {
 .compass-drag-head img {
     width: 32px;
     height: 32px;
-    margin: 70px 23px 0px;
+    margin: 70px 23px 0;
     -webkit-user-drag: none;
     pointer-events: all;
     cursor: move;
@@ -573,6 +575,5 @@ onUnmounted(() => {
     position: absolute;
     top: 0;
     left: 0;
-    font-size: 12px;
 }
 </style>
