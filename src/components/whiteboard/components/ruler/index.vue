@@ -56,7 +56,7 @@ import {
 } from "vue";
 import {OPTION_TYPE} from "../../config";
 import {ICanvasConfig, ICenter, IElement} from "../../types";
-import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
+import {getAngle, getCanvasPointPosition, normalizeAngle, throttleRAF} from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -87,6 +87,7 @@ const viewText = ref("");
 const startPoint = {x: 0, y: 0};
 const length = ref(0);
 let startAngle = 0;
+let logAngle = 0;
 let drawLine = [
     [0, 0],
     [0, 0]
@@ -96,7 +97,7 @@ let isAdsorption = false;
 
 const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
     const l = Math.hypot(center.x - mousePoint.x, center.y - mousePoint.y);
-    const angleA = getAngle(mousePoint.x - center.x, mousePoint.y - center.y);
+    const angleA = normalizeAngle(getAngle(mousePoint.x, mousePoint.y, center.x, center.y));
     const targetAngle = angleA - angle.value;
     if (targetAngle === 0) return l;
     const drawL = Math.abs(l * Math.sign((targetAngle * Math.PI) / 180));
@@ -128,9 +129,12 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         mode.value = "rotate";
         viewText.value = "angle";
         startAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
+            mouseX- canvasConfig.value.offsetX,
+            mouseY - canvasConfig.value.offsetY,
+            x.value,
+            y.value
         );
+        logAngle = (angle.value * Math.PI) / 180;
     }
 
     if (className === "ruler-button ruler-resize") {
@@ -214,11 +218,13 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
 
     if (mode.value === "rotate") {
         const targetAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
+            mouseX - canvasConfig.value.offsetX,
+            mouseY - canvasConfig.value.offsetY,
+            x.value,
+            y.value
         );
-        angle.value += targetAngle - startAngle;
-        startAngle = targetAngle;
+        const changeAngle = targetAngle - startAngle;
+        angle.value = Math.floor(normalizeAngle(changeAngle + logAngle));
     }
 
     if (mode.value === "resize") {

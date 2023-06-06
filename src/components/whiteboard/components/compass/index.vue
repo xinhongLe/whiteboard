@@ -99,7 +99,7 @@ import {
     inject, reactive
 } from "vue";
 import {ICanvasConfig} from "../../types";
-import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
+import {getAngle2, getCanvasPointPosition, throttleRAF} from "../../utils";
 import { OPTION_TYPE } from "../../config";
 
 const canTouch = inject("canTouch");
@@ -293,7 +293,7 @@ const handleMouseMove = throttleRAF((event: MouseEvent | TouchEvent) => {
             });
         }
 
-        const angle = getAngle(
+        const angle = getAngle2(
             newDrawPoint.x - center.x,
             newDrawPoint.y - center.y
         );

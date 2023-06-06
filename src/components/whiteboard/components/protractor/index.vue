@@ -3,7 +3,7 @@
         <div
             class="protractor"
             :style="{
-                top: `${y - r / 2}px`,
+                top: `${y - r}px`,
                 left: `${x - r}px`,
                 width: `${2 * r}px`,
                 height: `${r}px`,
@@ -58,7 +58,7 @@ import {
     inject
 } from "vue";
 import { ICanvasConfig } from "../../types";
-import { getAngle, throttleRAF } from "../../utils";
+import { getAngle, throttleRAF, normalizeAngle } from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -84,6 +84,7 @@ const protractorAngle = ref(0);
 const protractor = ref();
 const startPoint = { x: 0, y: 0 };
 let logStartAngle = 0;
+let logCurrentAngle = 0;
 let mode = "";
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
@@ -114,6 +115,13 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         mode = "resize";
     }
 
+    logStartAngle = getAngle(
+        mouseX - canvasConfig.value.offsetX,
+        mouseY - canvasConfig.value.offsetY,
+        x.value,
+        y.value
+    );
+
     if (
         event.target &&
         (event.target as Element).className ===
@@ -121,10 +129,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     ) {
         // rotate
         mode = "rotate";
-        logStartAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
-        );
+        logCurrentAngle = (protractorAngle.value / 180) * Math.PI;
     }
 
     if (
@@ -133,10 +138,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     ) {
         // start angle
         mode = "startAngle";
-        logStartAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
-        );
+        logCurrentAngle = (startAngle.value / 180) * Math.PI;
     }
 
     if (
@@ -145,10 +147,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     ) {
         // end angle
         mode = "endAngle";
-        logStartAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
-        );
+        logCurrentAngle = (endAngle.value / 180) * Math.PI;
     }
 
     if (event instanceof TouchEvent) {
@@ -189,48 +188,34 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
         y.value -= reduce / 2;
     }
 
+    const targetAngle = getAngle(
+        mouseX - canvasConfig.value.offsetX,
+        mouseY - canvasConfig.value.offsetY,
+        x.value,
+        y.value
+    );
+    const changeAngle = targetAngle - logStartAngle;
+
     if (mode === "rotate") {
-        const targetAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
+        protractorAngle.value = normalizeAngle(
+            changeAngle + logCurrentAngle
         );
-        protractorAngle.value += targetAngle - logStartAngle;
-        logStartAngle = targetAngle;
     }
 
     if (mode === "startAngle") {
-        let targetAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
+        startAngle.value = normalizeAngle(
+            changeAngle + logCurrentAngle
         );
-        let reduceAngle = targetAngle - logStartAngle;
-        if (reduceAngle > 90 || reduceAngle < -90) reduceAngle = 0;
-        startAngle.value += reduceAngle;
-        if (startAngle.value <= -360) startAngle.value = 0;
-        if (startAngle.value > 0) startAngle.value = startAngle.value - 360;
-        logStartAngle = targetAngle;
-
-        angle.value = Math.abs(startAngle.value - endAngle.value);
-        if (angle.value > 180) angle.value = 360 - angle.value;
     }
 
     if (mode === "endAngle") {
-        const targetAngle = getAngle(
-            mouseX - x.value - canvasConfig.value.offsetX,
-            mouseY - y.value - canvasConfig.value.offsetY
+        endAngle.value = normalizeAngle(
+            changeAngle + logCurrentAngle
         );
-
-        let reduceAngle = targetAngle - logStartAngle;
-        if (reduceAngle > 90 || reduceAngle < -90) reduceAngle = 0;
-        endAngle.value += reduceAngle;
-        if (endAngle.value <= -360) endAngle.value = 0;
-        if (endAngle.value > 0) endAngle.value = endAngle.value - 360;
-        logStartAngle = targetAngle;
-
-        angle.value = Math.abs(startAngle.value - endAngle.value);
-        if (angle.value > 180) angle.value = 360 - angle.value;
     }
 
+    const resultAngle = Math.floor(Math.abs(endAngle.value - startAngle.value));
+    angle.value = resultAngle > 180 ? 360 - resultAngle : resultAngle;
     startPoint.x = mouseX;
     startPoint.y = mouseY;
 });

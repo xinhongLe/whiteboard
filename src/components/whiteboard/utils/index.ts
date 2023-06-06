@@ -480,12 +480,40 @@ export const getPositionElement = (
 };
 
 /**
+ * 角度计算（将角度转换成0-360）
+ * @param angle
+ * @returns
+ */
+export const normalizeAngle = (angle: number): number => {
+    let newAngle = angle;
+    if (angle >= 2 * Math.PI) {
+        newAngle = angle - 2 * Math.PI;
+    }
+    if (angle < 0) {
+        newAngle = angle + 2 * Math.PI;
+    }
+    return (newAngle / Math.PI) * 180;
+};
+
+/**
+ * 获取旋转角度
+ * @param x 
+ * @param y 
+ * @param cx
+ * @param cy
+ * @returns 
+ */
+export const getAngle = (x: number, y: number, cx: number, cy: number) => {
+    return Math.atan2(y - cy, x - cx);
+};
+
+/**
  * 获取旋转角度
  * @param x 
  * @param y 
  * @returns 
  */
-export const getAngle = (x: number, y: number) => {
+export const getAngle2 = (x: number, y: number) => {
     const angle = Math.round(
         (Math.atan(Math.abs(y) / Math.abs(x)) / Math.PI) * 180
     );
