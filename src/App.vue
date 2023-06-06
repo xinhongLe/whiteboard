@@ -4,9 +4,9 @@
     <button @click="setOptionType(OPTION_TYPE.ERASER)">橡皮</button>
     <button @click="setOptionType(OPTION_TYPE.PEN)">画</button>
     <button @click="setOptionType(OPTION_TYPE.MOUSE)">移动</button>
-    <button @click="setOptionType(OPTION_TYPE.COMPASS)">圆规</button>
-    <button @click="setOptionType(OPTION_TYPE.RULER)">直尺</button>
-    <button @click="setOptionType(OPTION_TYPE.PROTRACTOR)">量角器</button>
+    <button @click="setToolTypes(OPTION_TYPE.COMPASS)">圆规</button>
+    <button @click="setToolTypes(OPTION_TYPE.RULER)">直尺</button>
+    <button @click="setToolTypes(OPTION_TYPE.PROTRACTOR)">量角器</button>
     <button @click="addLineWidth()">变粗</button>
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
@@ -43,6 +43,7 @@ export default defineComponent({
             offsetX: 0,
             offsetY: 0
         });
+        const toolTypes = ref<string[]>([]);
         const zoom = ref(1);
         const scrollX = ref(0);
         const scrollY = ref(0);
@@ -73,6 +74,14 @@ export default defineComponent({
         };
         const setOptionType = (type: OPTION_TYPE) => {
             whiteboard.value.setOptionType(type);
+        };
+        const setToolTypes = (type: OPTION_TYPE) => {
+            if (toolTypes.value.includes(type)) {
+                toolTypes.value = toolTypes.value.filter((item) => item !== type);
+            } else {
+                toolTypes.value.push(type);
+            }
+            whiteboard.value.setToolTypes(toolTypes.value);
         };
         const getElements = () => {
             console.log(whiteboard.value.getElements());
@@ -114,8 +123,9 @@ export default defineComponent({
         const canUndo = computed(() => whiteboard.value && whiteboard.value.canUndo);
         const canRedo = computed(() => whiteboard.value && whiteboard.value.canRedo);
 
-        const closeTool = () => {
-            console.log("关闭tool");
+        const closeTool = (type: string) => {
+            console.log("关闭tool", type);
+            toolTypes.value = toolTypes.value.filter((item) => item !== type);
         };
 
         return {
@@ -125,6 +135,7 @@ export default defineComponent({
             setZoom,
             zoom,
             setOptionType,
+            setToolTypes,
             OPTION_TYPE,
             getElements,
             addLineWidth,

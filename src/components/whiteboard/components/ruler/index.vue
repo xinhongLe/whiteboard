@@ -167,7 +167,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
             ...rulerCenter,
             points: drawLine,
             angle: angle.value
-        });
+        }, OPTION_TYPE.RULER);
     }
 
     if (event instanceof TouchEvent) {
@@ -301,6 +301,7 @@ onUnmounted(() => {
     bottom: 0;
     left: 0;
     right: 0;
+    pointer-events: none;
 }
 
 .ruler-box {
@@ -308,6 +309,7 @@ onUnmounted(() => {
     transform-origin: top left;
     border-radius: 4px;
     overflow: hidden;
+    pointer-events: all;
 }
 
 .ruler-scale-box {

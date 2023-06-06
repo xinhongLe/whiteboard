@@ -80,6 +80,7 @@ export enum OPTION_TYPE {
 | setScroll | 设置画布上下左右的滑动 | (x: number, y: number) => void |
 | setZoom | 设置画布缩放(最小0.1) | (zoom: number) => void |
 | setOptionType | 设置绘制的模式 | (type: OPTION_TYPE) => void |
+| setToolTypes | 设置工具 | (type: OPTION_TYPE) => void |
 | setLineWidth | 设置画笔粗细 | (width: number) => void |
 | setDrawColor | 设置画笔颜色 | (color: string) => void |
 | render | 绘制渲染 | () => void |

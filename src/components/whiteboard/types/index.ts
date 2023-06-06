@@ -84,6 +84,7 @@ export interface ICanvasConfig extends IOptionsConfig {
     scrollY: number;
     zoom: number;
     optionType: string;
+    toolTypes: string[];
     lineWidth: number;
     strokeColor: string;
     isDrawing: boolean;

@@ -16,30 +16,20 @@ export default (
     const {renderElements} = useRenderElement(canvas, context, canvasConfig);
     const {createCompassElement, createRulerElement} = useCreateElement(elements, canvasConfig);
     let targetElement: IElement | null = null;
-    const drawStart = (data: ICompassData | IRulerData) => {
-        switch (canvasConfig.optionType) {
-            case OPTION_TYPE.COMPASS: {
-                targetElement = createCompassElement(data as ICompassData);
-                break;
-            }
-            case OPTION_TYPE.RULER: {
-                targetElement = createRulerElement(data as IRulerData)
-            }
+    const drawStart = (data: ICompassData | IRulerData, type: string) => {
+        if (OPTION_TYPE.COMPASS === type) {
+            targetElement = createCompassElement(data as ICompassData);
+        } else if (OPTION_TYPE.RULER === type) {
+            targetElement = createRulerElement(data as IRulerData);
         }
         renderElements(elements.value);
     };
 
     const drawing = (data: ICompassData | IRulerData) => {
         if (!targetElement) return;
-        switch (canvasConfig.optionType) {
-            case OPTION_TYPE.COMPASS:
-            case OPTION_TYPE.RULER: {
-                updateElement(targetElement, {
-                    ...data
-                });
-                break;
-            }
-        }
+        updateElement(targetElement, {
+            ...data
+        });
         renderElements(elements.value);
     };
 

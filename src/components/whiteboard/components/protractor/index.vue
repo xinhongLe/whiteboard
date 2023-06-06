@@ -235,7 +235,7 @@ const handleMouseMove = throttleRAF((event: PointerEvent | TouchEvent) => {
     startPoint.y = mouseY;
 });
 
-const handleEnd = (event) => {
+const handleEnd = (event: Event) => {
     mode = "";
     if (event instanceof TouchEvent) {
         document.removeEventListener("touchmove", handleMouseMove);
@@ -273,6 +273,7 @@ onUnmounted(() => {
     bottom: 0;
     left: 0;
     right: 0;
+    pointer-events: none;
 }
 
 .protractor {
@@ -282,6 +283,7 @@ onUnmounted(() => {
     transform-origin: bottom center;
     background-image: url(./images/protractor.svg);
     background-size: 100% 100%;
+    pointer-events: all;
 }
 
 .protractor-angle {

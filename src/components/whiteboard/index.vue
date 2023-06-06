@@ -14,27 +14,27 @@
 
         <Compass
             :canvasConfig="canvasConfig"
-            @close="closeTool"
+            @close="closeTool(OPTION_TYPE.COMPASS)"
             @draw-start="drawStart"
             @drawing="drawing"
             @draw-end="drawEnd"
-            v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS"
+            v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS || canvasConfig.toolTypes.indexOf(OPTION_TYPE.COMPASS) > -1"
         />
 
         <Ruler
             :canvasConfig="canvasConfig"
             :elements="elements"
-            @close="closeTool"
+            @close="closeTool(OPTION_TYPE.RULER)"
             @draw-start="drawStart"
             @drawing="drawing"
             @draw-end="drawEnd"
-            v-if="canvasConfig.optionType === OPTION_TYPE.RULER"
+            v-if="canvasConfig.optionType === OPTION_TYPE.RULER || canvasConfig.toolTypes.indexOf(OPTION_TYPE.RULER) > -1"
         />
 
         <Protractor
             :canvasConfig="canvasConfig"
-            @close="closeTool"
-            v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR"
+            @close="closeTool(OPTION_TYPE.PROTRACTOR)"
+            v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR || canvasConfig.toolTypes.indexOf(OPTION_TYPE.PROTRACTOR) > -1"
         />
     </div>
 </template>
@@ -124,6 +124,7 @@ const canvasConfig = reactive<ICanvasConfig>({
     scrollY: 0,
     zoom: 1,
     optionType: OPTION_TYPE.MOUSE,
+    toolTypes: [],
     lineWidth: 5,
     strokeColor: "#f60000",
     isDrawing: false,
@@ -227,6 +228,11 @@ const setOptionType = (type: string) => {
     canvasConfig.optionType = type;
 };
 
+// 设置工具
+const setToolTypes = (types: string[]) => {
+    canvasConfig.toolTypes = types;
+};
+
 // 设置画笔宽度
 const setLineWidth = (width: number) => {
     canvasConfig.lineWidth = width;
@@ -288,15 +294,20 @@ const clear = () => {
 };
 
 // 关闭工具
-const closeTool = () => {
-    setOptionType(OPTION_TYPE.PEN);
-    emit("closeTool");
+const closeTool = (type: string) => {
+    if (canvasConfig.toolTypes.includes(type)) {
+        canvasConfig.toolTypes = canvasConfig.toolTypes.filter(
+            (item) => item !== type
+        );
+    }
+    emit("closeTool", type);
 };
 
 defineExpose({
     setScroll,
     setZoom,
     setOptionType,
+    setToolTypes,
     setLineWidth,
     setDrawColor,
     render,

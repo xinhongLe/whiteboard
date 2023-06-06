@@ -100,6 +100,7 @@ import {
 } from "vue";
 import {ICanvasConfig} from "../../types";
 import {getAngle, getCanvasPointPosition, throttleRAF} from "../../utils";
+import { OPTION_TYPE } from "../../config";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -220,7 +221,7 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
             drawAngle,
             x: canvasCircleCenter.x,
             y: canvasCircleCenter.y
-        });
+        }, OPTION_TYPE.COMPASS);
     }
 
     if (event instanceof TouchEvent) {
@@ -406,7 +407,7 @@ onUnmounted(() => {
     bottom: 0;
     left: 0;
     right: 0;
-    // pointer-events: none;
+    pointer-events: none;
     /* background: red; */
 }
 
@@ -419,6 +420,7 @@ onUnmounted(() => {
     transform-origin: 21.5px 475px;
     top: 0;
     left: 0;
+    pointer-events: all;
 }
 
 .compass-head-placeholder {
