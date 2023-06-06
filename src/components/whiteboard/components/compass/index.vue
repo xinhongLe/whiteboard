@@ -167,8 +167,6 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
     event.stopPropagation();
     if (disabled) return;
     if (event instanceof TouchEvent && event.touches.length > 1) return;
-
-    auxiliaryW.value = 0
     const mouseX =
         event instanceof TouchEvent
             ? event.targetTouches[0] ? event.targetTouches[0].clientX : event.changedTouches[0].clientX
@@ -323,6 +321,9 @@ const handleMouseMove = throttleRAF((event: MouseEvent | TouchEvent) => {
         y.value = y.value + mouseY - startPoint[1];
         startPoint = [mouseX, mouseY];
     }
+
+
+    getRadius();
 });
 
 const close = () => {
