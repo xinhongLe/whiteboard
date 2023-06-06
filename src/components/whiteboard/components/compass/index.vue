@@ -99,7 +99,7 @@ import {
     inject, reactive
 } from "vue";
 import {ICanvasConfig} from "../../types";
-import {getAngle2, getCanvasPointPosition, throttleRAF} from "../../utils";
+import {getAngle2, getCanvasPointPosition, throttleRAF, getWhiteBoardPointPosition} from "../../utils";
 import { OPTION_TYPE } from "../../config";
 
 const canTouch = inject("canTouch");
@@ -343,8 +343,8 @@ const tipPosition = reactive({x: 0, y: 0})
 
 
 function getRadius() {
-    const {x: cx, y: cy} = getCanvasPointPosition(getCompassCenter(), canvasConfig.value);
-    const {x: dx, y: dy} = getCanvasPointPosition(getDrawPointer(), canvasConfig.value);
+    const {x: cx, y: cy} = getWhiteBoardPointPosition(getCompassCenter(), canvasConfig.value);
+    const {x: dx, y: dy} = getWhiteBoardPointPosition(getDrawPointer(), canvasConfig.value);
     centerDot.x = cx
     centerDot.y = cy
     const sideLen1 = Math.abs(cx - dx)
@@ -376,8 +376,8 @@ function getRadius() {
 const auxiliaryCm = computed(() => Math.round(auxiliaryW.value / 4) / 10)
 
 onMounted(() => {
-    document.addEventListener("pointerdown", handleMouseDown, {passive: true});
-    document.addEventListener("touchstart", handleMouseDown, {passive: true});
+    compass.value.addEventListener("pointerdown", handleMouseDown, {passive: true});
+    compass.value.addEventListener("touchstart", handleMouseDown, {passive: true});
     nextTick(() => {
         x.value = compass.value.clientWidth / 2 - 109;
 
@@ -388,8 +388,8 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    document.removeEventListener("touchstart", handleMouseDown);
-    document.removeEventListener("pointerdown", handleMouseDown);
+    compass.value.removeEventListener("touchstart", handleMouseDown);
+    compass.value.removeEventListener("pointerdown", handleMouseDown);
 });
 </script>
 
