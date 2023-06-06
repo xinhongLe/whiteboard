@@ -78,10 +78,6 @@ export default (
         // 目标旋转对应的角度
         context.value.rotate(element.angle);
 
-        // 绘制笔记
-        if (element.type === 'DOT'){
-            context.value.fillStyle = element.strokeColor
-        }
         context.value.strokeStyle = element.strokeColor;
         context.value.lineWidth = element.lineWidth / 1.5;
         context.value.beginPath();
@@ -94,11 +90,19 @@ export default (
             element.drawAngle - element.startAngle < 0
         );
 
-        if (element.type === 'DOT'){
-            context.value.fill()
-        }
-
         context.value.stroke();
+        
+        context.value.beginPath();
+        // 绘制圆心
+        context.value.arc(
+            0,
+            0,
+            2,
+            0,
+            2 * Math.PI
+        );
+        context.value.fillStyle = element.strokeColor;
+        context.value.fill();
 
         // 状态复原
         context.value.restore();
@@ -202,7 +206,6 @@ export default (
                         renderPenElement(element as IPenElement);
                         break;
                     case OPTION_TYPE.COMPASS:
-                    case 'DOT':
                         renderCompassElement(element as ICompassElement);
                         break;
                     case OPTION_TYPE.RULER:

@@ -29,7 +29,7 @@ export default (elements: Ref<IElement[]>, canvasConfig: ICanvasConfig) => {
     const createCompassElement = (data: ICompassData) => {
         return createElement({
             id: createRandomCode(),
-            type: data.type ? data.type : OPTION_TYPE.COMPASS,
+            type: OPTION_TYPE.COMPASS,
             width: 0,
             height: 0,
             ...data,

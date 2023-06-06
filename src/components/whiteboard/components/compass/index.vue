@@ -124,7 +124,7 @@ const compassCenter = ref();
 const penArea = ref();
 const scale = ref(0.8);
 
-const emit = defineEmits(["close", "drawStart", "drawing", "drawEnd", "drawDot"]);
+const emit = defineEmits(["close", "drawStart", "drawing", "drawEnd"]);
 
 const props = defineProps({
     canvasConfig: {
@@ -205,14 +205,6 @@ const handleMouseDown = (event: PointerEvent | TouchEvent) => {
         drawAngle = startAngle;
         startPoint = [mouseX, mouseY];
         canvasCircleCenter = getCanvasPointPosition(center, canvasConfig.value);
-        emit("drawStart", {
-            r: 1,
-            startAngle: 0,
-            drawAngle: 360,
-            type: 'DOT',
-            x: canvasCircleCenter.x,
-            y: canvasCircleCenter.y
-        });
         emit("drawStart", {
             r: 0,
             startAngle,
