@@ -388,8 +388,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    compass.value.removeEventListener("touchstart", handleMouseDown);
-    compass.value.removeEventListener("pointerdown", handleMouseDown);
+    if (compass.value) {
+        compass.value.removeEventListener("touchstart", handleMouseDown);
+        compass.value.removeEventListener("pointerdown", handleMouseDown);
+    }
 });
 </script>
 
