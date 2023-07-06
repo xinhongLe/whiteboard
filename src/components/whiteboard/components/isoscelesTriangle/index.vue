@@ -1,50 +1,51 @@
 <template>
-    <div class="triangle-container" ref="rightTriangleRef">
+    <div class="triangle-container" ref="isoscelesTriangleRef">
         <div
             class="triangle-box"
             :style="{
             top: `${y}px`,
             left: `${x}px`,
             width:width+'px',
-            height:height+'px',
-            transformOrigin: `0 ${height }px`,
+            height:width+'px',
+            transformOrigin: `0 ${width}px`,
             transform: `rotate(${angle}deg) scale(${multiple})`,
         }"
         >
             <div class="content">
-                <svg :width="width" :height="height">
+                <svg :width="width" :height="width">
                     <polygon :points="points" style="fill: rgba(248, 248, 248, 0.8)"/>
                 </svg>
+
                 <div class="measurement-box ruler1">
                     <div class="triangle-number" v-for="num in length1" :key="num">
                         <span class="num">{{ num }}</span>
                     </div>
-                    <div class="right-triangle-scale" id="triangleScale1"></div>
+                    <div class="isosceles-triangle-scale" id="triangleScale1"></div>
                 </div>
                 <div class="measurement-box ruler2">
                     <div class="triangle-number" v-for="num in length2" :key="num">
                         <span class="num">{{ num }}</span>
                     </div>
-                    <div class="right-triangle-scale" id="triangleScale2"></div>
+                    <div class="isosceles-triangle-scale" id="triangleScale2"></div>
                 </div>
                 <div class="measurement-box ruler3">
                     <div class="triangle-number" v-for="num in length3" :key="num">
                         <span class="num">{{ num }}</span>
                     </div>
-                    <div class="right-triangle-scale" id="triangleScale3"></div>
+                    <div class="isosceles-triangle-scale" id="triangleScale3"></div>
                 </div>
 
                 <div class="triangle-buttons">
                     <div class="ruler-button triangle-close" @click="close()">
                         <img src="../ruler/images/close.svg" alt=""/>
                     </div>
-                    <div class="ruler-button right-triangle-magnify">
+                    <div class="ruler-button isosceles-triangle-magnify">
                         <img src="../ruler/images/resize.svg" alt=""/>
                     </div>
-                    <div class="ruler-button right-triangle-rotate">
+                    <div class="ruler-button isosceles-triangle-rotate">
                         <img src="../ruler/images/rotate.svg" alt=""/>
                     </div>
-                    <div class="ruler-button right-triangle-resize">
+                    <div class="ruler-button isosceles-triangle-resize">
                         <img src="../ruler/images/resize.svg" alt=""/>
                     </div>
                 </div>
@@ -54,13 +55,13 @@
 </template>
 
 <script lang="ts">
-import { OPTION_TYPE } from "@/components/whiteboard/config";
-import { ICanvasConfig, ICenter, IElement } from "@/components/whiteboard/types";
 import { computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref } from "vue";
+import { ICanvasConfig, ICenter, IElement } from "@/components/whiteboard/types";
 import { getAngle, getCanvasPointPosition, normalizeAngle, throttleRAF } from "@/components/whiteboard/utils";
+import { OPTION_TYPE } from "@/components/whiteboard/config";
 
 export default defineComponent({
-    name: "RightTriangle",
+    name: "IsoscelesTriangle",
     emits: ["close", "drawEnd", "drawStart", "drawing"],
     props: {
         canvasConfig: {
@@ -79,13 +80,12 @@ export default defineComponent({
         const y = ref(0);
         const angle = ref(0);
         const mode = ref("");
-        const height = ref(0);
-        const width = ref(600);
+        const width = ref(500);
         const length1 = ref(0);
         const length2 = ref(0);
         const length3 = ref(0);
         const multiple = ref(1);
-        const rightTriangleRef = ref();
+        const isoscelesTriangleRef = ref();
 
         let logAngle = 0;
         let drawAngle = 0;
@@ -98,20 +98,19 @@ export default defineComponent({
             [0, 0]
         ];
 
-        const points = computed(() => `0,0 0,${height.value} ${width.value},${height.value}`);
+        const points = computed(() => `0,0 0,${width.value} ${width.value},${width.value}`);
 
         const updateNumberList = () => {
-            height.value = width.value * Math.tan(30 * (Math.PI / 180));
-            const hypotenuse = width.value / Math.cos(30 * (Math.PI / 180));
-
-            length1.value = Math.floor((width.value - 120) / 40);
-            length2.value = Math.floor((height.value - 50) / 40);
-            length3.value = Math.floor((hypotenuse - 140) / 40);
+            const hypotenuse = width.value / Math.cos(45 * (Math.PI / 180));
+            length1.value = Math.floor((width.value - 100) / 40);
+            length2.value = Math.floor((width.value - 100) / 40);
+            length3.value = Math.floor((hypotenuse - 150) / 40);
         };
 
         const close = () => {
             emit("close");
         };
+
 
         const handleMouseDown = (event: PointerEvent | TouchEvent) => {
             event.stopPropagation();
@@ -127,17 +126,17 @@ export default defineComponent({
             startPoint.y = mouseY;
 
             const className = typeof (event.target as Element).className === "string" ? (event.target as Element).className : "";
-            if (isTriangleArea(event) && className !== "right-triangle-scale") {
+            if (isTriangleArea(event) && className !== "isosceles-triangle-scale") {
                 mode.value = "move";
             }
 
-            if (className === "ruler-button right-triangle-magnify") {
+            if (className === "ruler-button isosceles-triangle-magnify") {
                 mode.value = "magnify";
             }
-            if (className === "ruler-button right-triangle-resize") {
+            if (className === "ruler-button isosceles-triangle-resize") {
                 mode.value = "resize";
             }
-            if (className === "ruler-button right-triangle-rotate") {
+            if (className === "ruler-button isosceles-triangle-rotate") {
                 mode.value = "rotate";
                 startAngle = getAngle(
                     mouseX - props.canvasConfig.offsetX,
@@ -147,13 +146,13 @@ export default defineComponent({
                 );
                 logAngle = (angle.value * Math.PI) / 180;
             }
-            if (className.includes("right-triangle-scale")) {
+            if (className.includes("isosceles-triangle-scale")) {
                 const id = (event.target as Element).id;
                 mode.value = "draw";
                 triangleCenter = getCanvasPointPosition(
                     {
                         x: x.value + props.canvasConfig.offsetX,
-                        y: y.value + (id === "triangleScale3" ? 0 : height.value) + props.canvasConfig.offsetY
+                        y: y.value + (id === "triangleScale3" ? 0 : width.value) + props.canvasConfig.offsetY
                     },
                     props.canvasConfig
                 );
@@ -168,10 +167,10 @@ export default defineComponent({
                         triangleCenter.x,
                         triangleCenter.y,
                         x.value,
-                        y.value + height.value,
+                        y.value + width.value,
                         angle.value * (Math.PI / 180)
                     );
-                    drawAngle = 30;
+                    drawAngle = 45;
                 }
                 const point = getCanvasPointPosition(startPoint, props.canvasConfig);
                 const line = dealForDrawLine(triangleCenter, point);
@@ -298,13 +297,13 @@ export default defineComponent({
         function isTriangleArea(event: PointerEvent | TouchEvent) {
             let dot = getCanvasPointPosition(event, props.canvasConfig);
             const radian = (360 - angle.value) * Math.PI / 180;
-            dot = rotatePoint(dot.x, dot.y, x.value, y.value + height.value, radian);
+            dot = rotatePoint(dot.x, dot.y, x.value, y.value + width.value, radian);
             const point1 = { x: x.value, y: y.value };
-            const point2 = { x: x.value + width.value, y: y.value + height.value };
+            const point2 = { x: x.value + width.value, y: y.value + width.value };
 
             if (multiple.value > 1) {
-                point1.y = point2.y - height.value * multiple.value;
-                point2.x = y.value + height.value * multiple.value;
+                point1.y = point2.y - width.value * multiple.value;
+                point2.x = y.value + width.value * multiple.value;
             }
 
             if (!(dot.x > point1.x && dot.x < point2.x && dot.y > point1.y && dot.y < point2.y)) return false;
@@ -322,12 +321,13 @@ export default defineComponent({
             };
         }
 
+
         onMounted(() => {
             updateNumberList();
 
-            if (rightTriangleRef.value) {
-                x.value = rightTriangleRef.value.clientWidth / 2 - 250;
-                y.value = rightTriangleRef.value.clientHeight / 2 - height.value / 2;
+            if (isoscelesTriangleRef.value) {
+                x.value = isoscelesTriangleRef.value.clientWidth / 2 - 250;
+                y.value = isoscelesTriangleRef.value.clientHeight / 2 - 250;
             }
 
             document.addEventListener("touchstart", handleMouseDown, { passive: true });
@@ -338,20 +338,18 @@ export default defineComponent({
             document.removeEventListener("touchstart", handleMouseDown);
             document.removeEventListener("pointerdown", handleMouseDown);
         });
-
         return {
             x,
             y,
             close,
-            angle,
             width,
-            height,
+            angle,
             points,
             length1,
             length2,
             length3,
             multiple,
-            rightTriangleRef
+            isoscelesTriangleRef
         };
     }
 });
@@ -386,7 +384,7 @@ export default defineComponent({
     display: flex;
     transform-origin: 0 0;
 
-    .right-triangle-scale {
+    .isosceles-triangle-scale {
         position: absolute;
         display: flex;
         height: 20px;
@@ -413,7 +411,7 @@ export default defineComponent({
         bottom: 0;
         left: 20px;
 
-        .right-triangle-scale {
+        .isosceles-triangle-scale {
             transform: scaleY(-1);
         }
 
@@ -428,7 +426,7 @@ export default defineComponent({
         left: 0;
         transform: rotate(-90deg);
 
-        .right-triangle-scale {
+        .isosceles-triangle-scale {
             transform: scaleX(-1);
         }
 
@@ -441,7 +439,7 @@ export default defineComponent({
     &.ruler3 {
         top: 0;
         left: 0;
-        transform: rotate(30deg) translateX(50px);
+        transform: rotate(45deg) translateX(75px);
 
         .num {
             top: 20px;
@@ -458,7 +456,7 @@ export default defineComponent({
     left: 0;
     top: 0;
     width: 60%;
-    transform: rotate(30deg) translate(95px, 35px);
+    transform: rotate(45deg) translate(195px, 35px);
     transform-origin: 0 0;
     justify-content: space-between;
 }
@@ -494,20 +492,20 @@ export default defineComponent({
         cursor: pointer;
     }
 
-    &.right-triangle-magnify {
+    &.isosceles-triangle-magnify {
         margin-right: 20px;
         cursor: default;
         transform: rotate(90deg);
 
     }
 
-    &.right-triangle-resize {
+    &.isosceles-triangle-resize {
         margin-right: 20px;
         cursor: default;
 
     }
 
-    &.right-triangle-rotate {
+    &.isosceles-triangle-rotate {
         margin-right: 20px;
         cursor: default;
     }

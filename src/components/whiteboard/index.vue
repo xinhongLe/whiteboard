@@ -40,10 +40,21 @@
         <right-triangle
             @drawing="drawing"
             @draw-end="drawEnd"
-            @draw-start="drawStart"
             :elements="elements"
+            @draw-start="drawStart"
             :canvasConfig="canvasConfig"
             @close="closeTool(OPTION_TYPE.RIGHTTRIANGLE)"
+            v-if="canvasConfig.optionType === OPTION_TYPE.RIGHTTRIANGLE || canvasConfig.toolTypes.includes(OPTION_TYPE.RIGHTTRIANGLE)"
+        />
+
+        <isosceles-triangle
+            @drawing="drawing"
+            @draw-end="drawEnd"
+            :elements="elements"
+            @draw-start="drawStart"
+            :canvasConfig="canvasConfig"
+            @close="closeTool(OPTION_TYPE.ISOSCELESTRIANGLE)"
+            v-if="canvasConfig.optionType === OPTION_TYPE.ISOSCELESTRIANGLE || canvasConfig.toolTypes.includes(OPTION_TYPE.ISOSCELESTRIANGLE)"
         />
     </div>
 </template>
@@ -74,6 +85,7 @@ import Compass from "./components/compass/index.vue";
 import Ruler from "./components/ruler/index.vue";
 import Protractor from "./components/protractor/index.vue";
 import RightTriangle from "@/components/whiteboard/components/rightTriangle/index.vue";
+import IsoscelesTriangle from "@/components/whiteboard/components/isoscelesTriangle/index.vue";
 
 const emit = defineEmits(["scrollChange", "zoomChange", "closeTool"]);
 

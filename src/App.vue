@@ -7,6 +7,8 @@
     <button @click="setToolTypes(OPTION_TYPE.COMPASS)">圆规</button>
     <button @click="setToolTypes(OPTION_TYPE.RULER)">直尺</button>
     <button @click="setToolTypes(OPTION_TYPE.PROTRACTOR)">量角器</button>
+    <button @click="setToolTypes(OPTION_TYPE.RIGHTTRIANGLE)">直角三角形</button>
+    <button @click="setToolTypes(OPTION_TYPE.ISOSCELESTRIANGLE)">等腰直角三角形</button>
     <button @click="addLineWidth()">变粗</button>
     <button @click="reduceLineWidth()">变细</button>
     <button @click="getElements()">数据</button>
