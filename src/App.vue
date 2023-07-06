@@ -60,12 +60,7 @@ export default defineComponent({
             whiteboard.value.setOptionType(type);
         };
         const setToolTypes = (type: OPTION_TYPE) => {
-            if (toolTypes.value.includes(type)) {
-                toolTypes.value = toolTypes.value.filter((item) => item !== type);
-            } else {
-                toolTypes.value.push(type);
-            }
-            whiteboard.value.setToolTypes(toolTypes.value);
+            whiteboard.value.setToolTypes(type);
         };
         const getElements = () => {
             console.log(whiteboard.value.getElements());

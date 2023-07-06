@@ -251,8 +251,12 @@ const setOptionType = (type: string) => {
 };
 
 // 设置工具
-const setToolTypes = (types: string[]) => {
-    canvasConfig.toolTypes = types;
+const setToolTypes = (type: string) => {
+    if (canvasConfig.toolTypes.includes(type)) {
+        canvasConfig.toolTypes = canvasConfig.toolTypes.filter((item) => item !== type);
+    } else {
+        canvasConfig.toolTypes.push(type);
+    }
 };
 
 // 设置画笔宽度
