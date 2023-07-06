@@ -14,7 +14,8 @@
     <button @click="clear()">清空</button>
     <button @click="undo()" :disabled="!canUndo">撤销</button>
     <button @click="redo()" :disabled="!canRedo">恢复</button>
-    &nbsp;<span>滚动 ({{(-scrollX).toFixed(0)}}/{{(-scrollY).toFixed(0)}})</span> <span>缩放 {{(zoom * 100).toFixed(0)}}%</span>
+    &nbsp;<span>滚动 ({{ (-scrollX).toFixed(0) }}/{{ (-scrollY).toFixed(0) }})</span>
+    <span>缩放 {{ (zoom * 100).toFixed(0) }}%</span>
     <div class="white-board-box" ref="whiteboardBox">
         <WhiteBoard
             :options="options"
@@ -27,48 +28,29 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 import WhiteBoard, { OPTION_TYPE } from "./components/whiteboard";
+import { computed, defineComponent, nextTick, onMounted, onUnmounted, ref } from "vue";
 
 export default defineComponent({
     name: "App",
-    components: {
-        WhiteBoard
-    },
+    components: { WhiteBoard },
     setup() {
-        const whiteboard = ref();
-        const whiteboardBox = ref();
         let width = 5;
-        const options = ref({
-            offsetX: 0,
-            offsetY: 0
-        });
-        const toolTypes = ref<string[]>([]);
+        const whiteboard = ref();
         const zoom = ref(1);
+        const whiteboardBox = ref();
         const scrollX = ref(0);
         const scrollY = ref(0);
+        const toolTypes = ref<string[]>([]);
+        const options = ref({ offsetX: 0, offsetY: 0 });
+
         const resize = () => {
             const { x, y } = whiteboardBox.value.getBoundingClientRect();
             options.value = {
                 offsetX: x,
                 offsetY: y
             };
-
-            console.log("计算偏移值", x, y);
         };
-        onMounted(() => {
-            nextTick(resize);
-
-            window.addEventListener("resize", resize);
-
-            whiteboard.value.setOptionType(OPTION_TYPE.PEN);
-
-            // 处理外部使用dom慢引起的笔记计算误差，延迟后再执行一下，降低误差概率
-            setTimeout(resize, 2000);
-        });
-        onUnmounted(() => {
-            window.removeEventListener("resize", resize);
-        });
         const setZoom = (zoom: number) => {
             whiteboard.value.setZoom(zoom);
         };
@@ -124,9 +106,22 @@ export default defineComponent({
         const canRedo = computed(() => whiteboard.value && whiteboard.value.canRedo);
 
         const closeTool = (type: string) => {
-            console.log("关闭tool", type);
             toolTypes.value = toolTypes.value.filter((item) => item !== type);
         };
+
+        onMounted(() => {
+            nextTick(resize);
+
+            window.addEventListener("resize", resize);
+
+            whiteboard.value.setOptionType(OPTION_TYPE.PEN);
+
+            // 处理外部使用dom慢引起的笔记计算误差，延迟后再执行一下，降低误差概率
+            setTimeout(resize, 2000);
+        });
+        onUnmounted(() => {
+            window.removeEventListener("resize", resize);
+        });
 
         return {
             whiteboard,

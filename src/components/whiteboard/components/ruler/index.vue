@@ -21,13 +21,7 @@
                     <img src="./images/close.svg" alt=""/>
                 </div>
                 <div class="ruler-angle-text">
-                    {{
-                        viewText === "angle"
-                            ? angle + "°"
-                            : viewText === "length"
-                                ? Math.abs(length) + "cm"
-                                : ""
-                    }}
+                    {{viewText === "angle" ? angle + "°" : viewText === "length" ? Math.abs(length) + "cm" : ""}}
                 </div>
                 <div class="ruler-button ruler-magnify">
                     <img src="./images/resize.svg" alt=""/>
@@ -44,19 +38,10 @@
 </template>
 
 <script lang="ts" setup>
-import {
-    computed,
-    onMounted,
-    PropType,
-    ref,
-    defineProps,
-    defineEmits,
-    onUnmounted,
-    inject
-} from "vue";
-import {OPTION_TYPE} from "../../config";
-import {ICanvasConfig, ICenter, IElement} from "../../types";
-import {getAngle, getCanvasPointPosition, normalizeAngle, throttleRAF} from "../../utils";
+import { computed, defineEmits, defineProps, inject, onMounted, onUnmounted, PropType, ref } from "vue";
+import { OPTION_TYPE } from "../../config";
+import { ICanvasConfig, ICenter, IElement } from "../../types";
+import { getAngle, getCanvasPointPosition, normalizeAngle, throttleRAF } from "../../utils";
 
 const canTouch = inject("canTouch");
 const disabled = inject("disabled");
@@ -100,8 +85,7 @@ const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
     const angleA = normalizeAngle(getAngle(mousePoint.x, mousePoint.y, center.x, center.y));
     const targetAngle = angleA - angle.value;
     if (targetAngle === 0) return l;
-    const drawL = Math.abs(l * Math.sign((targetAngle * Math.PI) / 180));
-    return drawL;
+    return Math.abs(l * Math.sign((targetAngle * Math.PI) / 180));
 };
 
 const handleMouseDown = (event: PointerEvent | TouchEvent) => {
@@ -387,24 +371,20 @@ onUnmounted(() => {
     }
 
     &.ruler-close {
-        margin-left: 20px;
         cursor: pointer;
     }
 
     &.ruler-restore {
-        margin-right: 20px;
         cursor: pointer;
     }
 
     &.ruler-magnify {
-        margin-right: 20px;
         cursor: default;
         transform: rotate(90deg);
 
     }
 
     &.ruler-resize {
-        margin-right: 20px;
         cursor: default;
 
     }
