@@ -121,5 +121,7 @@ declare namespace mwhiteboard {
         COMPASS = "COMPASS", // 圆规
         RULER = "RULER", // 直尺
         PROTRACTOR = "PROTRACTOR", // 量角器
+        RIGHTTRIANGLE = "RIGHTTRIANGLE", // 直角三角形
+        ISOSCELESTRIANGLE = "ISOSCELESTRIANGLE", // 等腰直角三角形
     }
 }
