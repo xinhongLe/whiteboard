@@ -89,6 +89,7 @@ export interface ICanvasConfig extends IOptionsConfig {
     strokeColor: string;
     isDrawing: boolean;
     isMoveOrScale: boolean;
+    eraserLinWidth: number
 }
 
 export type IBoundsCoords = [number, number, number, number];

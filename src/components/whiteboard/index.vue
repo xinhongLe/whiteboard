@@ -36,6 +36,18 @@
         @close="closeTool(OPTION_TYPE.PROTRACTOR)"
         v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR || canvasConfig.toolTypes.indexOf(OPTION_TYPE.PROTRACTOR) > -1"
     />
+    <div
+        class="eraser"
+        :style="{
+                left: mouse.x - canvasConfig.eraserLinWidth / 2 + 'px',
+                top: mouse.y - canvasConfig.eraserLinWidth / 2 + 'px',
+                width: canvasConfig.eraserLinWidth + 'px',
+                height: canvasConfig.eraserLinWidth + 'px'
+            }"
+        v-if="canvasConfig.isDrawing && isEraser"
+
+    ></div>
+
   </div>
 </template>
 
@@ -99,20 +111,29 @@ const canvasWidth = ref(0 * canvasScale);
 const canvasHeighth = ref(0 * canvasScale);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
-const eraserIcon = require("./assets/images/circle.svg");
+// const eraserIcon = require("./assets/images/circle.svg");
 const storeElements = ref<IElement[]>([]);
 
 // 禁用触摸屏下双指触发右键菜单 影响缩放
 document.oncontextmenu = () => {
   return false;
 };
+// 鼠标位置坐标：用于画笔或橡皮位置跟随
+const mouse = ref({
+  x: 0,
+  y: 0
+});
+const isEraser = computed(() => {
+  return canvasConfig.optionType === OPTION_TYPE.ERASER
+});
+
 
 const cursor = computed(() => {
   if (canvasConfig.isMoveOrScale) return "grabbing";
   return {
     MOUSE: "default",
     PEN: "crosshair",
-    ERASER: `url(${eraserIcon}) 20 20, auto`
+    ERASER: `none`
   }[canvasConfig.optionType];
 });
 
@@ -128,7 +149,8 @@ const canvasConfig = reactive<ICanvasConfig>({
   lineWidth: 5,
   strokeColor: "#f60000",
   isDrawing: false,
-  isMoveOrScale: false
+  isMoveOrScale: false,
+  eraserLinWidth: 30
 });
 
 watch([() => canvasConfig.scrollX, () => canvasConfig.scrollY], () => {
@@ -158,7 +180,8 @@ const {handleDown} = useHandlePointer(
     elements,
     storeElements,
     canvasConfig,
-    disabled
+    disabled,
+    mouse
 );
 const {renderElements} = useRenderElement(canvas, context, canvasConfig);
 const {handleWeel} = useZoom(canvas, canvasConfig);
@@ -242,6 +265,12 @@ const setLineWidth = (width: number) => {
   canvasConfig.lineWidth = width;
 };
 
+
+// 设置橡皮的宽度
+const setEraserLinWidth = (width: number) => {
+  canvasConfig.eraserLinWidth = width;
+};
+
 // 设置画笔颜色
 const setDrawColor = (color: string) => {
   canvasConfig.strokeColor = color;
@@ -313,6 +342,7 @@ defineExpose({
   setOptionType,
   setToolTypes,
   setLineWidth,
+  setEraserLinWidth,
   setDrawColor,
   render,
   getElements,
@@ -326,7 +356,7 @@ defineExpose({
 });
 </script>
 
-<style>
+<style lang="scss" scoped>
 .white-board {
   width: 100%;
   height: 100%;
@@ -335,8 +365,29 @@ defineExpose({
   user-select: none;
 }
 
+/*.eraser {*/
+/*  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==") 10 10,*/
+/*  auto;*/
+/*}*/
 .eraser {
-  cursor: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAARRJREFUOE/dlDFLxEAQhd+BVouFZ3vlQuwSyI+5a7PBRkk6k9KzTOwStJFsWv0xgaQzkNLWszim0kL2OOFc9oKRYHFTz37Lm/dmJhi5JiPzcBjAOYDz7WheADz3jalP8oIxds85P3Zd90RBqqpad133SUSXAJ5M4H3AhWVZd1EUzYQQP96VZYkkSV7btr02QY1Axtgqz/NTz/OM6qSUCMNwRURneoMJOLdt+7Gu643MfeU4zrppmgt9pibgjRBiWRRFb0R934eUcgngdrfxX4CjSwZj7C3Lsqnu8Lc05XQQBO9ENP2NKapnE5s4jme608rhNE2HxWb7qwr2A+f8SAv2BxFdDQ32rpLRVu9Pl+0wztcg6V/VPW4Vw1FsawAAAABJRU5ErkJggg==") 10 10,
-  auto;
+  pointer-events: none;
+  position: absolute;
+  z-index: 9;
+
+  .icon {
+    filter: drop-shadow(2px 2px 2px #555);
+  }
 }
+
+
+.eraser {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  border: 4px solid rgba($color: #555, $alpha: 0.15);
+  color: rgba($color: #555, $alpha: 0.75);
+  box-sizing: border-box;
+}
+
 </style>

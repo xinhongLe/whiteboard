@@ -1,6 +1,6 @@
-import { Ref } from "vue";
-import { OPTION_TYPE } from "../config";
-import { ICanvasConfig, IElement, IPenElement, IPoint } from "../types";
+import {Ref} from "vue";
+import {OPTION_TYPE} from "../config";
+import {ICanvasConfig, IElement, IPenElement, IPoint} from "../types";
 import {
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
@@ -20,28 +20,31 @@ export default (
     elements: Ref<IElement[]>,
     storeElements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig,
-    disabled: Ref<boolean>
+    disabled: Ref<boolean>,
+    mouse:Ref<any>
 ) => {
-    const { createPenElement, createEraserElement } = useCreateElement(
+    const {createPenElement, createEraserElement} = useCreateElement(
         elements,
         canvasConfig
     );
-    const { updateElement } = useUpdateElement(elements);
-    const { renderElements } = useRenderElement(canvas, context, canvasConfig);
-    const { updateScroll } = useZoom(canvas, canvasConfig);
+    const {updateElement} = useUpdateElement(elements);
+    const {renderElements} = useRenderElement(canvas, context, canvasConfig);
+    const {updateScroll} = useZoom(canvas, canvasConfig);
     let targetElement: IElement | null = null;
     let startPoint: IPoint | null = null;
     // 两指间距离
     let twoPointLen = 0;
     // 两指间中心点
-    let twoPointCenter = { x: 0, y: 0 };
+    let twoPointCenter = {x: 0, y: 0};
 
     const canvasMove = (event: PointerEvent | TouchEvent) => {
         if (startPoint) {
-            const { x, y } = getWhiteBoardPointPosition(event, canvasConfig);
+            const {x, y} = getWhiteBoardPointPosition(event, canvasConfig);
             canvasConfig.scrollX += x - startPoint[0];
             canvasConfig.scrollY += y - startPoint[1];
             startPoint = [x, y];
+            mouse.value.x = x;
+            mouse.value.y = y;
             renderElements(elements.value);
         }
     };
@@ -70,31 +73,35 @@ export default (
                         event.touches.length === 1) ||
                     event instanceof PointerEvent
                 ) {
-                    const { x, y } = getWhiteBoardPointPosition(
+                    const {x, y} = getWhiteBoardPointPosition(
                         event,
                         canvasConfig
                     );
                     startPoint = [x, y];
+
                 }
                 break;
             }
             case OPTION_TYPE.PEN: {
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                targetElement = createPenElement({ x, y });
+                const {x, y} = getCanvasPointPosition(event, canvasConfig);
+                targetElement = createPenElement({x, y});
                 canvasConfig.isDrawing = true;
                 break;
             }
             case OPTION_TYPE.ERASER: {
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
-                targetElement = createEraserElement({ x, y });
+                const {x, y} = getCanvasPointPosition(event, canvasConfig);
+                mouse.value.x = x;
+                mouse.value.y = y;
+                targetElement = createEraserElement({x, y});
+                targetElement.lineWidth = canvasConfig.eraserLinWidth || 30;
                 canvasConfig.isDrawing = true;
                 break;
             }
         }
-        
+
         if (event instanceof TouchEvent) {
-            window.addEventListener("touchmove", handleMove, { passive: true });
-            window.addEventListener("touchend", handleUp, { passive: true });
+            window.addEventListener("touchmove", handleMove, {passive: true});
+            window.addEventListener("touchend", handleUp, {passive: true});
         } else {
             window.addEventListener("pointermove", handleMove);
             window.addEventListener("pointerup", handleUp);
@@ -148,7 +155,9 @@ export default (
             case OPTION_TYPE.ERASER:
             case OPTION_TYPE.PEN: {
                 if (!canvasConfig.isDrawing || !targetElement) return;
-                const { x, y } = getCanvasPointPosition(event, canvasConfig);
+                const {x, y} = getCanvasPointPosition(event, canvasConfig);
+                mouse.value.x = x;
+                mouse.value.y = y;
                 drawOnCanvas(x, y);
                 break;
             }
@@ -212,7 +221,7 @@ export default (
                         points: [...points, [0.0001, 0.0001]]
                     });
                 } else {
-                    const { x, y } = getCanvasPointPosition(
+                    const {x, y} = getCanvasPointPosition(
                         event,
                         canvasConfig
                     );
