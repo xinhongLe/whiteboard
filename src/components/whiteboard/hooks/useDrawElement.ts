@@ -21,6 +21,8 @@ export default (
             targetElement = createCompassElement(data as ICompassData);
         } else if (OPTION_TYPE.RULER === type) {
             targetElement = createRulerElement(data as IRulerData);
+        }else if (OPTION_TYPE.RIGHTTRIANGLE === type) {
+            targetElement = createRulerElement(data as IRulerData);
         }
         renderElements(elements.value);
     };
