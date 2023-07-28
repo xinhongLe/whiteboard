@@ -56,30 +56,6 @@
         @close="closeTool(OPTION_TYPE.ISOSCELESTRIANGLE)"
         v-if="canvasConfig.optionType === OPTION_TYPE.ISOSCELESTRIANGLE || canvasConfig.toolTypes.includes(OPTION_TYPE.ISOSCELESTRIANGLE)"
     />
-    <Compass
-        :canvasConfig="canvasConfig"
-        @close="closeTool(OPTION_TYPE.COMPASS)"
-        @draw-start="drawStart"
-        @drawing="drawing"
-        @draw-end="drawEnd"
-        v-if="canvasConfig.optionType === OPTION_TYPE.COMPASS || canvasConfig.toolTypes.indexOf(OPTION_TYPE.COMPASS) > -1"
-    />
-
-    <Ruler
-        :canvasConfig="canvasConfig"
-        :elements="elements"
-        @close="closeTool(OPTION_TYPE.RULER)"
-        @draw-start="drawStart"
-        @drawing="drawing"
-        @draw-end="drawEnd"
-        v-if="canvasConfig.optionType === OPTION_TYPE.RULER || canvasConfig.toolTypes.indexOf(OPTION_TYPE.RULER) > -1"
-    />
-
-    <Protractor
-        :canvasConfig="canvasConfig"
-        @close="closeTool(OPTION_TYPE.PROTRACTOR)"
-        v-if="canvasConfig.optionType === OPTION_TYPE.PROTRACTOR || canvasConfig.toolTypes.indexOf(OPTION_TYPE.PROTRACTOR) > -1"
-    />
     <div
         class="eraser"
         :style="{
