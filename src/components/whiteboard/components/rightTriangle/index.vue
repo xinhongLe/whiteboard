@@ -1,6 +1,7 @@
 <template>
     <div class="triangle-container" ref="rightTriangleRef">
         <div
+            id="rightTriangleBox"
             class="triangle-box"
             :style="{
             top: `${y}px`,
@@ -13,7 +14,7 @@
         >
             <div class="content">
                 <svg :width="width" :height="height">
-                    <polygon :points="points" style="fill: rgba(248, 248, 248, 0.8)"/>
+                    <polygon id="rightTriangle" :points="points" style="fill: rgba(248, 248, 248, 0.8)"/>
                 </svg>
                 <div class="measurement-box ruler1">
                     <div class="triangle-number" v-for="num in length1" :key="num">
@@ -55,8 +56,9 @@
 
 <script lang="ts">
 import { OPTION_TYPE } from "@/components/whiteboard/config";
-import { ICanvasConfig, ICenter, IElement } from "@/components/whiteboard/types";
-import { computed, defineComponent, inject, onMounted, onUnmounted, PropType, ref } from "vue";
+import useTriangle from "@/components/whiteboard/hooks/useTriangle";
+import { ICanvasConfig, IElement } from "@/components/whiteboard/types";
+import { defineComponent, onMounted, onUnmounted, PropType, ref } from "vue";
 import { getAngle, getCanvasPointPosition, normalizeAngle, throttleRAF } from "@/components/whiteboard/utils";
 
 export default defineComponent({
@@ -73,19 +75,26 @@ export default defineComponent({
         }
     },
     setup(props, { emit }) {
-        const disabled = inject("disabled");
-
-        const x = ref(0);
-        const y = ref(0);
-        const angle = ref(0);
-        const mode = ref("");
-        const height = ref(0);
         const width = ref(600);
-        const length1 = ref(0);
-        const length2 = ref(0);
-        const length3 = ref(0);
-        const multiple = ref(1);
         const rightTriangleRef = ref();
+
+        const {
+            x,
+            y,
+            mode,
+            angle,
+            height,
+            points,
+            length1,
+            length2,
+            length3,
+            multiple,
+            disabled,
+            handleMove,
+            rotatePoint,
+            isTriangleArea,
+            dealForDrawLine
+        } = useTriangle(width);
 
         let logAngle = 0;
         let drawAngle = 0;
@@ -97,8 +106,6 @@ export default defineComponent({
             [0, 0],
             [0, 0]
         ];
-
-        const points = computed(() => `0,0 0,${height.value} ${width.value},${height.value}`);
 
         const updateNumberList = () => {
             height.value = width.value * Math.tan(30 * (Math.PI / 180));
@@ -126,8 +133,14 @@ export default defineComponent({
             startPoint.x = mouseX;
             startPoint.y = mouseY;
 
-            const className = typeof (event.target as Element).className === "string" ? (event.target as Element).className : "";
-            if (isTriangleArea(event) && className !== "right-triangle-scale") {
+            const className = Object.prototype.toString.call(event.target) === "[object HTMLDivElement]" ? (event.target as Element).className : "";
+            const flag = isTriangleArea(event);
+            if (Object.prototype.toString.call(event.target) === "[object SVGSVGElement]") {
+                emit("drawStart", event);
+                return;
+            }
+            const id = (event.target as Element).getAttribute("id")
+            if (flag && className !== "right-triangle-scale" && id === 'rightTriangle') {
                 mode.value = "move";
             }
 
@@ -286,42 +299,6 @@ export default defineComponent({
             }
         };
 
-        const dealForDrawLine = (center: ICenter, mousePoint: ICenter) => {
-            const l = Math.hypot(center.x - mousePoint.x, center.y - mousePoint.y);
-            const angleA = normalizeAngle(getAngle(mousePoint.x, mousePoint.y, center.x, center.y));
-            const targetAngle = angleA - angle.value;
-            if (targetAngle === 0) return l;
-            return Math.abs(l * Math.sign((targetAngle * Math.PI) / 180));
-        };
-
-        // 判断鼠标按下的点是否在三角形之内
-        function isTriangleArea(event: PointerEvent | TouchEvent) {
-            let dot = getCanvasPointPosition(event, props.canvasConfig);
-            const radian = (360 - angle.value) * Math.PI / 180;
-            dot = rotatePoint(dot.x, dot.y, x.value, y.value + height.value, radian);
-            const point1 = { x: x.value, y: y.value };
-            const point2 = { x: x.value + width.value, y: y.value + height.value };
-
-            if (multiple.value > 1) {
-                point1.y = point2.y - height.value * multiple.value;
-                point2.x = y.value + height.value * multiple.value;
-            }
-
-            if (!(dot.x > point1.x && dot.x < point2.x && dot.y > point1.y && dot.y < point2.y)) return false;
-
-            const k = (point2.y - point1.y) / (point2.x - point1.x);
-            const b = point1.y - k * point1.x;
-            const b1 = dot.y - k * dot.x;
-            return b1 > b;
-        }
-
-        function rotatePoint(x1: number, y1: number, x2: number, y2: number, angle: number) {
-            return {
-                x: (x1 - x2) * Math.cos(angle) - (y1 - y2) * Math.sin(angle) + x2,
-                y: (x1 - x2) * Math.sin(angle) + (y1 - y2) * Math.cos(angle) + y2
-            };
-        }
-
         onMounted(() => {
             updateNumberList();
 
@@ -332,11 +309,16 @@ export default defineComponent({
 
             document.addEventListener("touchstart", handleMouseDown, { passive: true });
             document.addEventListener("pointerdown", handleMouseDown, { passive: true });
+
+            document.addEventListener("pointermove", handleMove, { passive: true });
+            document.addEventListener("touchmove", handleMove, { passive: true });
         });
 
         onUnmounted(() => {
             document.removeEventListener("touchstart", handleMouseDown);
             document.removeEventListener("pointerdown", handleMouseDown);
+            document.removeEventListener("pointermove", handleMove);
+            document.removeEventListener("touchmove", handleMove);
         });
 
         return {

@@ -5,12 +5,8 @@
         :width="canvasWidth"
         :height="canvasHeighth"
         @mousewheel.passive="wheelScaleCanvas"
-        :style="{
-                width: canvasDomWidth,
-                height: canvasDomHeight,
-                cursor: cursor
-            }"
-    ></canvas>
+        :style="{cursor: cursor,width: canvasDomWidth,height: canvasDomHeight}">
+    </canvas>
 
     <Compass
         @drawing="drawing"
@@ -39,6 +35,7 @@
 
     <right-triangle
         @drawing="drawing"
+        @pen="handleDown"
         @draw-end="drawEnd"
         :elements="elements"
         @draw-start="drawStart"
@@ -58,15 +55,14 @@
     />
     <div
         class="eraser"
-        :style="{
-                left: mouse.x - canvasConfig.eraserLinWidth / 2 + 'px',
-                top: mouse.y - canvasConfig.eraserLinWidth / 2 + 'px',
-                width: canvasConfig.eraserLinWidth + 'px',
-                height: canvasConfig.eraserLinWidth + 'px'
-            }"
         v-if="canvasConfig.isDrawing && isEraser"
-
-    ></div>
+        :style="{
+                width: canvasConfig.eraserLinWidth + 'px',
+                height: canvasConfig.eraserLinWidth + 'px',
+                top: mouse.y - canvasConfig.eraserLinWidth / 2 + 'px',
+                left: mouse.x - canvasConfig.eraserLinWidth / 2 + 'px'
+        }"
+    />
   </div>
 </template>
 
@@ -128,8 +124,8 @@ const canvasScale = window.devicePixelRatio;
 const whiteboard = ref<HTMLDivElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const context = ref<CanvasRenderingContext2D | null>(null);
-const canvasWidth = ref(0 * canvasScale);
-const canvasHeighth = ref(0 * canvasScale);
+const canvasWidth = ref(0);
+const canvasHeighth = ref(0);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 // const eraserIcon = require("./assets/images/circle.svg");
