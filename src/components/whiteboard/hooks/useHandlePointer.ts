@@ -4,7 +4,7 @@ import {ICanvasConfig, IElement, IPenElement, IPoint} from "../types";
 import {
     getBoundsCoordsFromPoints,
     getCanvasPointPosition,
-    getDistance,
+    getDistance, getPointPosition,
     getTouchesCenter,
     getWhiteBoardPointPosition,
     throttleRAF
@@ -21,7 +21,7 @@ export default (
     storeElements: Ref<IElement[]>,
     canvasConfig: ICanvasConfig,
     disabled: Ref<boolean>,
-    mouse:Ref<any>
+    mouse: Ref<any>
 ) => {
     const {createPenElement, createEraserElement} = useCreateElement(
         elements,
@@ -90,8 +90,9 @@ export default (
             }
             case OPTION_TYPE.ERASER: {
                 const {x, y} = getCanvasPointPosition(event, canvasConfig);
-                mouse.value.x = x;
-                mouse.value.y = y;
+                const {px, py} = getPointPosition(event);
+                mouse.value.x = px;
+                mouse.value.y = py;
                 targetElement = createEraserElement({x, y});
                 targetElement.lineWidth = canvasConfig.eraserLinWidth || 30;
                 canvasConfig.isDrawing = true;
@@ -156,8 +157,11 @@ export default (
             case OPTION_TYPE.PEN: {
                 if (!canvasConfig.isDrawing || !targetElement) return;
                 const {x, y} = getCanvasPointPosition(event, canvasConfig);
-                mouse.value.x = x;
-                mouse.value.y = y;
+                // mouse.value.x = x;
+                // mouse.value.y = y;
+                const {px, py} = getPointPosition(event);
+                mouse.value.x = px;
+                mouse.value.y = py;
                 drawOnCanvas(x, y);
                 break;
             }
@@ -186,6 +190,7 @@ export default (
             case OPTION_TYPE.ERASER:
             case OPTION_TYPE.PEN: {
                 const points = (targetElement as IPenElement).points;
+                // console.log('points', points)
                 updateElement(targetElement, {
                     points: [
                         ...points,
@@ -200,6 +205,7 @@ export default (
                 break;
             }
         }
+        // console.log("elements", elements.value)
         renderElements(elements.value);
     };
 

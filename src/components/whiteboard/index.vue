@@ -56,15 +56,16 @@
         @close="closeTool(OPTION_TYPE.ISOSCELESTRIANGLE)"
         v-if="canvasConfig.optionType === OPTION_TYPE.ISOSCELESTRIANGLE || canvasConfig.toolTypes.includes(OPTION_TYPE.ISOSCELESTRIANGLE)"
     />
+    <!--    canvasConfig.isDrawing &&-->
     <div
         class="eraser"
         :style="{
-                left: mouse.x - canvasConfig.eraserLinWidth / 2 + 'px',
-                top: mouse.y - canvasConfig.eraserLinWidth / 2 + 'px',
-                width: canvasConfig.eraserLinWidth + 'px',
-                height: canvasConfig.eraserLinWidth + 'px'
+                left: mouse.x - (canvasConfig.eraserLinWidth * canvasConfig.zoom) / 2 + 'px',
+                top: mouse.y  - (canvasConfig.eraserLinWidth * canvasConfig.zoom) / 2 + 'px',
+                width: canvasConfig.eraserLinWidth * canvasConfig.zoom + 'px',
+                height: canvasConfig.eraserLinWidth * canvasConfig.zoom + 'px'
             }"
-        v-if="canvasConfig.isDrawing && isEraser"
+        v-if="isEraser"
 
     ></div>
   </div>
@@ -282,99 +283,99 @@ const setToolTypes = (type: string) => {
 }
 
 // 设置画笔宽度
-  const setLineWidth = (width: number) => {
-    canvasConfig.lineWidth = width;
-  };
+const setLineWidth = (width: number) => {
+  canvasConfig.lineWidth = width;
+};
 
 
 // 设置橡皮的宽度
-  const setEraserLinWidth = (width: number) => {
-    canvasConfig.eraserLinWidth = width;
-  };
+const setEraserLinWidth = (width: number) => {
+  canvasConfig.eraserLinWidth = width;
+};
 
 // 设置画笔颜色
-  const setDrawColor = (color: string) => {
-    canvasConfig.strokeColor = color;
-  };
+const setDrawColor = (color: string) => {
+  canvasConfig.strokeColor = color;
+};
 
 // 渲染
-  const render = (inElements?: IElement[]) => {
-    renderElements(inElements || elements.value);
-  };
+const render = (inElements?: IElement[]) => {
+  renderElements(inElements || elements.value);
+};
 
 // 获取元素数据
-  const getElements = () => {
-    return elements.value;
-  };
+const getElements = () => {
+  return elements.value;
+};
 
 // 设置元素数据
-  const setElements = (data: IElement[]) => {
-    elements.value = data;
-  };
+const setElements = (data: IElement[]) => {
+  elements.value = data;
+};
 
 // 复位
-  const reset = () => {
-    canvasConfig.zoom = 1;
-    canvasConfig.scrollX = 0;
-    canvasConfig.scrollY = 0;
-  };
+const reset = () => {
+  canvasConfig.zoom = 1;
+  canvasConfig.scrollX = 0;
+  canvasConfig.scrollY = 0;
+};
 
 // 撤销
-  const undo = () => {
-    if (elements.value.length === 0) return;
-    const element = elements.value.pop();
-    storeElements.value.push(element!);
-    render();
-  };
+const undo = () => {
+  if (elements.value.length === 0) return;
+  const element = elements.value.pop();
+  storeElements.value.push(element!);
+  render();
+};
 
 // 能否撤销
-  const canUndo = computed(() => elements.value.length > 0);
+const canUndo = computed(() => elements.value.length > 0);
 
 // 恢复
-  const redo = () => {
-    if (storeElements.value.length === 0) return;
-    const element = storeElements.value.pop();
-    elements.value.push(element!);
-    render();
-  };
+const redo = () => {
+  if (storeElements.value.length === 0) return;
+  const element = storeElements.value.pop();
+  elements.value.push(element!);
+  render();
+};
 
 // 能否恢复
-  const canRedo = computed(() => storeElements.value.length > 0);
+const canRedo = computed(() => storeElements.value.length > 0);
 
 // 清空元素
-  const clear = () => {
-    elements.value = [];
-    render();
-  };
+const clear = () => {
+  elements.value = [];
+  render();
+};
 
 // 关闭工具
-  const closeTool = (type: string) => {
-    if (canvasConfig.toolTypes.includes(type)) {
-      canvasConfig.toolTypes = canvasConfig.toolTypes.filter(
-          (item) => item !== type
-      );
-    }
-    emit("closeTool", type);
-  };
+const closeTool = (type: string) => {
+  if (canvasConfig.toolTypes.includes(type)) {
+    canvasConfig.toolTypes = canvasConfig.toolTypes.filter(
+        (item) => item !== type
+    );
+  }
+  emit("closeTool", type);
+};
 
-  defineExpose({
-    setScroll,
-    setZoom,
-    setOptionType,
-    setToolTypes,
-    setLineWidth,
-    setEraserLinWidth,
-    setDrawColor,
-    render,
-    getElements,
-    setElements,
-    reset,
-    clear,
-    undo,
-    redo,
-    canUndo,
-    canRedo
-  });
+defineExpose({
+  setScroll,
+  setZoom,
+  setOptionType,
+  setToolTypes,
+  setLineWidth,
+  setEraserLinWidth,
+  setDrawColor,
+  render,
+  getElements,
+  setElements,
+  reset,
+  clear,
+  undo,
+  redo,
+  canUndo,
+  canRedo
+});
 </script>
 
 <style lang="scss" scoped>

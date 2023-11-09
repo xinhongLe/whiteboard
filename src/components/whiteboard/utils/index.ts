@@ -1,6 +1,15 @@
-import getStroke, { StrokeOptions } from "perfect-freehand";
-import { OPTION_TYPE } from "../config";
-import { IBoundsCoords, ICanvasConfig, ICenter, ICompassElement, IElement, IPenElement, IPoint, IRulerElement } from "../types";
+import getStroke, {StrokeOptions} from "perfect-freehand";
+import {OPTION_TYPE} from "../config";
+import {
+    IBoundsCoords,
+    ICanvasConfig,
+    ICenter,
+    ICompassElement,
+    IElement,
+    IPenElement,
+    IPoint,
+    IRulerElement
+} from "../types";
 
 /**
  * 生成随机码
@@ -34,13 +43,31 @@ export const getCanvasPointPosition = (
     const y =
         event instanceof TouchEvent
             ? (event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY)
-            : event instanceof PointerEvent ? event.clientY :  event.y;
+            : event instanceof PointerEvent ? event.clientY : event.y;
     return {
         x:
             (x - canvasConfig.offsetX) / canvasConfig.zoom -
             canvasConfig.scrollX,
         y: (y - canvasConfig.offsetY) / canvasConfig.zoom - canvasConfig.scrollY
     };
+};
+
+// 获取鼠标点在HTML中的位置
+export const getPointPosition = (event: PointerEvent | TouchEvent) => {
+    const targetElement = event.target as HTMLElement;
+    const targetRect = targetElement.getBoundingClientRect();   // 获取目标元素的位置信息
+    const px =
+        event instanceof TouchEvent
+            ? (event.targetTouches[0] ? event.targetTouches[0].clientX - targetRect.left : event.changedTouches[0].clientX - targetRect.left)
+            : event.offsetX;
+    const py =
+        event instanceof TouchEvent
+            ? (event.targetTouches[0] ? event.targetTouches[0].clientY - targetRect.top : event.changedTouches[0].clientY - targetRect.top)
+            : event.offsetY;
+    return {
+        px: px,
+        py: py
+    }
 };
 
 /**
@@ -60,7 +87,7 @@ export const getWhiteBoardPointPosition = (
     const y =
         event instanceof TouchEvent
             ? (event.targetTouches[0] ? event.targetTouches[0].clientY : event.changedTouches[0].clientY)
-            : event instanceof PointerEvent ? event.clientY :  event.y;
+            : event instanceof PointerEvent ? event.clientY : event.y;
     return {
         x: (x - canvasConfig.offsetX) / canvasConfig.zoom,
         y: (y - canvasConfig.offsetY) / canvasConfig.zoom
@@ -102,8 +129,8 @@ export const getZoomScroll = (
 
 /**
  * 获取所有点形成的区域的 最小横纵坐标值 和 最大横纵坐标值
- * @param points 
- * @returns 
+ * @param points
+ * @returns
  */
 export const getBoundsCoordsFromPoints = (points: IPoint[]): IBoundsCoords => {
     let minX = Infinity;
@@ -154,12 +181,12 @@ export const getElementBoundsCoords = (element: IElement): IBoundsCoords => {
         return [
             minX + (element as IPenElement).x - (element as IRulerElement).lineWidth / 2,
             minY + (element as IPenElement).y - (element as IRulerElement).lineWidth / 2,
-            maxX + (element as IPenElement).x  + (element as IRulerElement).lineWidth / 2,
-            maxY + (element as IPenElement).y  + (element as IRulerElement).lineWidth / 2
+            maxX + (element as IPenElement).x + (element as IRulerElement).lineWidth / 2,
+            maxY + (element as IPenElement).y + (element as IRulerElement).lineWidth / 2
         ]
     }
 
-    return [ 0, 0, 0, 0 ];
+    return [0, 0, 0, 0];
 };
 
 // throttle callback to execute once per animation frame
@@ -210,6 +237,7 @@ export const throttleRAF = <T extends unknown[]>(fn: (...args: T) => void) => {
 };
 
 const TO_FIXED_PRECISION = /(\s?[A-Z]?,?-?[0-9]*\.[0-9]{0,2})(([0-9]|e|-)*)/g;
+
 function med(A: number[], B: number[]) {
     return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
 }
@@ -289,9 +317,9 @@ export const checkCrossElements = (
             if (
                 !(
                     ((element as IPenElement).x + minX > Math.max(startPonit[0], x) &&
-                    (element as IPenElement).y + minY > Math.max(startPonit[1], y)) ||
+                        (element as IPenElement).y + minY > Math.max(startPonit[1], y)) ||
                     ((element as IPenElement).x + maxX < Math.min(startPonit[0], x) &&
-                    (element as IPenElement).y + maxY < Math.min(startPonit[1], y))
+                        (element as IPenElement).y + maxY < Math.min(startPonit[1], y))
                 ) &&
                 !element.isDelete
             ) {
@@ -304,7 +332,7 @@ export const checkCrossElements = (
                     const r = Math.hypot(x - (element as IPenElement).x, y - (element as IPenElement).y);
                     if (r < 5) return (element.isDelete = true);
                 }
-    
+
                 // 下面对存在交点的情况 进行进一步判断
                 // 通过向量的叉乘进行判断
                 // 向量a×向量b（×为向量叉乘），若结果小于0，表示向量b在向量a的顺时针方向；若结果大于0，表示向量b在向量a的逆时针方向；若等于0，表示向量a与向量b平行
@@ -328,13 +356,13 @@ export const checkCrossElements = (
                     const AB = [B[0] - A[0], B[1] - A[1]];
                     const AC = [C[0] - A[0], C[1] - A[1]];
                     const AD = [D[0] - A[0], D[1] - A[1]];
-    
+
                     // 以C为起点 向量 CD CA CB -> 证明 A B 点 在CD两边
                     // 向量 CD CA CB
                     const CA = [A[0] - C[0], A[1] - C[1]];
                     const CB = [B[0] - C[0], B[1] - C[1]];
                     const CD = [D[0] - C[0], D[1] - C[1]];
-    
+
                     // 向量叉乘 一正一负 证明则成立
                     if (
                         Math.sign(crossMul(AC, AB) * crossMul(AD, AB)) === -1 &&
@@ -407,12 +435,12 @@ export const getViewCanvasBoundsCoords = (
 
 /**
  * 获取符合位置点所在的元素
- * @param elements 
- * @param zoom 
- * @param x 
- * @param y 
- * @param selectedElement 
- * @returns 
+ * @param elements
+ * @param zoom
+ * @param x
+ * @param y
+ * @param selectedElement
+ * @returns
  */
 export const getPositionElement = (
     elements: IPenElement[],
@@ -467,7 +495,7 @@ export const getPositionElement = (
                 // 判断条件 -- 1、与A点距离小于distance 2、与B点距离小于distance 3、与A点距离 与B点距离 两者之和 与 AB点距离 的差 小于 distance
                 // 三个条件满足一个即为符合要求的元素
                 if (rA < distance || rB < distance || (rA + rB - rAB) < distance) {
-                    hoverElement =  element;
+                    hoverElement = element;
                     break;
                 }
             }
@@ -497,11 +525,11 @@ export const normalizeAngle = (angle: number): number => {
 
 /**
  * 获取旋转角度
- * @param x 
- * @param y 
+ * @param x
+ * @param y
  * @param cx
  * @param cy
- * @returns 
+ * @returns
  */
 export const getAngle = (x: number, y: number, cx: number, cy: number) => {
     return Math.atan2(y - cy, x - cx);
@@ -509,9 +537,9 @@ export const getAngle = (x: number, y: number, cx: number, cy: number) => {
 
 /**
  * 获取旋转角度
- * @param x 
- * @param y 
- * @returns 
+ * @param x
+ * @param y
+ * @returns
  */
 export const getAngle2 = (x: number, y: number) => {
     const angle = Math.round(
@@ -523,9 +551,9 @@ export const getAngle2 = (x: number, y: number) => {
 
 /**
  * 获取两点间距离
- * @param start 
- * @param stop 
- * @returns 
+ * @param start
+ * @param stop
+ * @returns
  */
 export const getDistance = (start: { x: number, y: number }, stop: { x: number, y: number }) => {
     return Math.hypot(stop.x - start.x, stop.y - start.y);
@@ -533,11 +561,11 @@ export const getDistance = (start: { x: number, y: number }, stop: { x: number, 
 
 /**
  * 获取两指中心点
- * @param touchList 
- * @returns 
+ * @param touchList
+ * @returns
  */
 export const getTouchesCenter = (touchList: TouchList) => {
     const pointOne = touchList[0];
     const pointTwo = touchList[1];
-    return { x: (pointOne.pageX + pointTwo.pageX) / 2, y: (pointOne.pageY + pointTwo.pageY) / 2 };
+    return {x: (pointOne.pageX + pointTwo.pageX) / 2, y: (pointOne.pageY + pointTwo.pageY) / 2};
 };

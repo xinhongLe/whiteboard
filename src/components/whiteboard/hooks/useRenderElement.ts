@@ -91,7 +91,7 @@ export default (
         );
 
         context.value.stroke();
-        
+
         context.value.beginPath();
         // 绘制圆心
         context.value.arc(
@@ -146,7 +146,6 @@ export default (
         // 点少于两个时不进行绘制
         if (element.points.length < 2 || !context.value) return;
         const [x1, y1, x2, y2] = getElementBoundsCoords(element);
-
         // cx, cy 最小矩形中心点在canvas中的位置
         const cx = (x1 + x2) / 2 + canvasConfig.scrollX;
         const cy = (y1 + y2) / 2 + canvasConfig.scrollY;
