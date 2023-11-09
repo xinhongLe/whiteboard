@@ -5,12 +5,8 @@
         :width="canvasWidth"
         :height="canvasHeighth"
         @mousewheel.passive="wheelScaleCanvas"
-        :style="{
-                width: canvasDomWidth,
-                height: canvasDomHeight,
-                cursor: cursor
-            }"
-    ></canvas>
+        :style="{cursor: cursor,width: canvasDomWidth,height: canvasDomHeight}">
+    </canvas>
 
     <Compass
         @drawing="drawing"
@@ -39,6 +35,7 @@
 
     <right-triangle
         @drawing="drawing"
+        @pen="handleDown"
         @draw-end="drawEnd"
         :elements="elements"
         @draw-start="drawStart"
@@ -56,7 +53,6 @@
         @close="closeTool(OPTION_TYPE.ISOSCELESTRIANGLE)"
         v-if="canvasConfig.optionType === OPTION_TYPE.ISOSCELESTRIANGLE || canvasConfig.toolTypes.includes(OPTION_TYPE.ISOSCELESTRIANGLE)"
     />
-    <!--    canvasConfig.isDrawing &&-->
     <div
         class="eraser"
         :style="{
@@ -65,7 +61,7 @@
                 width: canvasConfig.eraserLinWidth * canvasConfig.zoom + 'px',
                 height: canvasConfig.eraserLinWidth * canvasConfig.zoom + 'px'
             }"
-        v-if="isEraser"
+        v-if="canvasConfig.isDrawing && isEraser "
 
     ></div>
   </div>
@@ -129,8 +125,8 @@ const canvasScale = window.devicePixelRatio;
 const whiteboard = ref<HTMLDivElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
 const context = ref<CanvasRenderingContext2D | null>(null);
-const canvasWidth = ref(0 * canvasScale);
-const canvasHeighth = ref(0 * canvasScale);
+const canvasWidth = ref(0);
+const canvasHeighth = ref(0);
 const canvasDomWidth = ref(0 + "px");
 const canvasDomHeight = ref(0 + "px");
 // const eraserIcon = require("./assets/images/circle.svg");
